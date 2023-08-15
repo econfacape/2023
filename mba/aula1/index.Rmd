@@ -309,7 +309,7 @@ class: center
 ```{r upe1}
 #Direcionado o R para o Diretorio a ser trabalhado
 #setwd('c:/Users/Joao Ricardo Lima/Dropbox/tempecon/dados_manga')
-setwd('/Users/jricardofl/Dropbox/Embrapa/2023/UPE Agro 4.0/aula1/dados')
+setwd('/Users/jricardofl/Dropbox/Embrapa/2023/UPE Agro 4.0/2023/aula1/dados')
 
 #Inicio do Script
 #Pacotes a serem utilizados
@@ -976,13 +976,13 @@ class: center
 
 ```{r upe9, out.width  = "100%", fig.align  = "center"}
 #Direcionado o R para o Diretorio a ser trabalhado
-setwd('/Users/jricardofl/Dropbox/Embrapa/2023/UPE Agro 4.0/aula1/dados')
+setwd('/Users/jricardofl/Dropbox/Embrapa/2023/UPE Agro 4.0/2023/aula1/dados')
 
 options(digits=4)
 
 anterior <- as.Date("2023-06-01")
 atual <-  as.Date("2023-07-01") #ultimo mes disponibilizado
-today <- as.Date("2023-08-04") #data para o IGPI - ultima semana do preço semana do preço
+today <- as.Date("2023-08-11") #data para o IGPI - ultima semana do preço semana do preço
 mes <- 7
 
 #Entrando dados no R
@@ -1320,8 +1320,8 @@ class: center
 ``` {r upe11, out.width  = "100%", fig.align  = "center"}
 library(imputeTS)
 library(tsutils)
-data <- as.Date("2023-08-04")
-sem_ano <- 31 #ajustar semanalmente
+data <- as.Date("2023-08-11")
+sem_ano <- 32 #ajustar semanalmente
 
 #Direcionado o R para o Diretorio a ser trabalhado
 setwd('/Users/jricardofl/Dropbox/tempecon/dados_Uva')
