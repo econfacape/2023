@@ -1,0 +1,1285 @@
+---
+title: "POLÍTICA MACROECONÔMICA."
+subtitle: "ECONOMIA DO AGRONEGÓCIO"
+author: 'João Ricardo Lima<br><span style = "font-size: 70%;">D.Sc em Economia Aplicada<br>joao.ricardo@embrapa.br'
+date: "<span style = 'font-size: 70%;'> 19 de Agosto de 2023.</span>"
+encoding: "UTF-8"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: TRUE
+      ratio: "16:9"
+      navigation: 
+        scroll: false
+params:
+  references: FALSE # TRUE = mostrar último slide com referências
+#  references_path: "https://gist.githubusercontent.com/analisemacro/1521d6cd7d9239cc2343269ca6f99a0a/raw/58d10d00e7a55ef38aac695693cc5513952fbb1a/references.bib" # caminho para arquivo .bib
+#  logo_slides: "https://bit.ly/3JJ2ZXA"
+---
+class: center
+
+```{r setup, include=FALSE}
+# Dependências dos slides/aula
+library(knitr)          # CRAN v1.33
+library(rmarkdown)      # CRAN v2.10
+library(xaringan)       # CRAN v0.22
+library(xaringanthemer) # CRAN v0.3.0
+library(xaringanExtra)  # [github::gadenbuie/xaringanExtra] v0.5.5
+library(RefManageR)     # CRAN v1.3.0
+library(ggplot2)        # CRAN v3.3.5
+library(fontawesome)    # [github::rstudio/fontawesome] v0.1.0
+library(pagedown)
+library(scales)
+library(plotly)
+library(dplyr)
+library(reshape2)
+library(readxl)
+library(GetTDData)
+library(readr)
+library(xts)
+library(forecast)
+library(mFilter)
+library(grid)
+library(png)
+library(rbcb)
+library(Quandl)
+library(tidyverse)
+library(sidrar)
+library(easyGgplot2)
+library(lubridate)
+
+# Opções de chunks
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  echo       = FALSE,
+  warning    = FALSE,
+  message    = FALSE,
+  fig.retina = 3,
+  fig.width  = 10,
+  fig.asp    = 0.6,
+  out.width  = "80%",
+  fig.align  = "center",
+  comment    = "#"
+  )
+
+# Cores para gráficos
+colors <- c(
+  blue       = "#282f6b",
+  red        = "#b22200",
+  yellow     = "#eace3f",
+  green      = "#224f20",
+  purple     = "#5f487c",
+  orange     = "#b35c1e",
+  turquoise  = "#419391",
+  green_two  = "#839c56",
+  light_blue = "#3b89bc",
+  gray       = "#666666"
+  )
+```
+
+```{r xaringan, echo=FALSE}
+# Tema da apresentação
+xaringanthemer::style_mono_light(
+  base_color                      = unname(colors["blue"]),
+  title_slide_background_image    = params$logo_slides, 
+  title_slide_background_size     = 12,
+  title_slide_background_position = "bottom 10px right 20px",
+  title_slide_background_color    = "white",
+  title_slide_text_color          = unname(colors["blue"]),
+  footnote_position_bottom        = "15px"
+  )
+
+# Opções extras do tema
+xaringanExtra::use_progress_bar(
+  color    = colors["blue"], 
+  location = "bottom"
+  )
+xaringanExtra::use_extra_styles(
+  hover_code_line         = TRUE,
+  mute_unhighlighted_code = FALSE
+  )
+xaringanExtra::use_panelset()
+```
+
+```{css, echo=FALSE}
+pre {
+  white-space: pre-wrap;
+  overflow-y: scroll !important;
+  max-height: 45vh !important;
+  overflow-x: auto;
+  max-width: 100%;
+}
+```
+
+```{r load_refs, echo=FALSE, eval=params$references}
+# Configuração de citações
+RefManageR::BibOptions(
+  check.entries = FALSE,
+  bib.style     = "authoryear",
+  cite.style    = "authoryear",
+  style         = "markdown",
+  hyperlink     = FALSE,
+  dashed        = FALSE
+  )
+if(params$references){
+  temp_refbib <- tempdir()
+  download.file(
+    url      = params$references_path, 
+    destfile = paste0(temp_refbib, "/references.bib"), 
+    mode     = "wb"
+    )
+  myBib <- RefManageR::ReadBib(paste0(temp_refbib, "/references.bib"), check = FALSE)
+  }
+
+# Como citar?
+# RefManageR::TextCite(myBib, "id_da_citacao")
+```
+
+```{r utils, echo=FALSE}
+# Função que pega um arquivo .Rmd, condicionalmente o renderiza, 
+# e embute o conteúdo do mesmo formatado como Markdown puro 
+# no output do documento atual
+print_rmd <- function(file, encoding = "UTF-8", render = TRUE){
+  if(render){rmarkdown::render(input = file, quiet = TRUE)}
+  rmd <- readLines(con = file, encoding = encoding)
+  cat("```md\n")
+  cat(rmd, sep = "\n")
+  cat("```\n")
+}
+```
+
+
+### OBJETIVO DA DISCUSSÃO
+
+**Mostrar a importância entender as condições macroeconômicas domésticas e internacionais, pois são fatores externos que afetam o ambiente de negócios, seja reduzindo ou aumentando as incertezas dos empresários e dos consumidores.**
+
+```{r, echo=FALSE, out.width="58%"}
+knitr::include_graphics("https://media.giphy.com/media/C41Xy2F6TjP04XJIld/giphy.gif")
+```
+
+---
+class: center, middle
+### MACROECONOMIA
+
+.pull-left[
+
+- **Macroeconomia** trata da evolução da economia como um todo, analisando a determinação e o comportamento dos grandes agregados: nível geral de preços, emprego e desemprego, estoque de moeda, taxa de juros, balanço de pagamento e taxa de câmbio. 
+
+- A teoria macroeconômica preocupa-se mais com questões conjunturais, de curto prazo.
+
+- São metas da **política macroeconômica**: a) pleno emprego de recursos; b) estabilidade dos preços; c) distribuição de renda socialmente justa; d) crescimento econômico. 
+
+- A estrutura da análise macroeconômica divide os mercados na sua parte real (mercados de bens/serviços e de trabalho) e na parte monetária (mercados financeiro e de divisas).
+]
+
+.pull-right[
+
+- Política do Governo entre 67/73 ficou chamada de **Teoria do Bolo**: primeiro crescer para depois repartir.
+
+```{r, echo=FALSE, out.width="100%"}
+knitr::include_graphics("https://media.giphy.com/media/He4wudo59enf2/giphy.gif")
+```
+]
+
+---
+class: center, middle
+### MACROECONOMIA
+
+.pull-left[
+
+- Para atingir suas metas os principais instrumentos do governo são as políticas fiscal, monetária e cambial/comercial
+
+- A Política Fiscal trata da arrecadação e gastos do governo. Atualmente tramita no Congresso Nacional uma proposta de novo arcabouço fiscal.
+
+- A Política Monetária trata da quantidade de moeda em circulação, da disponibilidade de crédito e a taxa de juros, onde a SELIC é a taxa principal.
+
+- A Política Câmbial/Comercial trata da relação com o setor externo, entrada e saída de moeda estrangeira, incentivos às exportações ou importações, etc.
+]
+
+.pull-right[
+
+```{r, echo=FALSE, out.width="80%"}
+knitr::include_graphics("img_r/macro1.jpeg")
+```
+]
+
+---
+class: center, middle
+### MACROECONOMIA - NÍVEL DE ATIVIDADE
+
+```{r upe1, fig.cap = 'PIB'}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("PIB" = 22099, "PIB_SA" = 22109),
+#first.date = "1996-03-01",
+#last.date = "2022-09-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo03.csv')
+
+pib <- ts(read.csv2('dados/arquivo03.csv',
+                       header=T, sep=';', dec=',')[,-c(1,2)],
+             start=c(1996,01), freq=4)
+
+hp <- hpfilter(pib[,2], type='lambda', freq=1600)
+
+range <- range(pib[,2])
+
+plot(pib[,2], type="l", lwd=3, xaxt='n', bty='l', xlab='', 
+     ylab='Número Índice',
+     ylim=c(range[1], range[2]))
+
+polygon(x=c(2020,2020, 2021,2021),
+        y=c(range[1]-10, range[2]+10, rev(range[2]+10), rev(range[1]-10)),
+        density=NA, col="lightgray", border=NA)
+
+polygon(x=c(2014,2014, 2017,2017),
+        y=c(range[1]-10, range[2]+10, rev(range[2]+10), rev(range[1]-10)),
+        density=NA, col="lightgray", border=NA)
+
+polygon(x=c(2008,2008, 2010,2010),
+        y=c(range[1]-10, range[2]+10, rev(range[2]+10), rev(range[1]-10)),
+        density=NA, col="lightgray", border=NA)
+
+
+lines(pib[,2], type="l", lwd=3)
+lines(hp$trend, col='red', lty=2, lwd=2)
+axis(1, at=c(1996:2022))
+grid(col='grey0')
+
+mtext('Comportamento do PIB trimestral', side=3, line=1, font=2)
+
+legend('topleft', lty=c(1,2), lwd=c(3,2), col=c('black', 'red'),
+       legend=c('PIB IBGE', 'Filtro HP'), bty='n')
+```
+
+---
+class: center, middle
+### MACROECONOMIA - NÍVEL DE ATIVIDADE 
+
+``` {r upe2, fig.cap = 'O Hiato do Produto.'}
+
+plot(hp$cycle, bty='l', xlab='', ylab='Número índice', xaxt='n', lwd=2)
+axis(1, at=c(1996:2022))
+abline(h=0, col='red', lty=1, lwd=2)
+
+grid(col='gray0')
+
+mtext('Hiato do Produto (PIB efetivo - PIB potencial)', side=3, line=1, font=2)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - NÍVEL DE ATIVIDADE
+
+``` {r upe3, fig.cap = 'Figura 7: PIB e seus componentes encadeado normal'}
+library(BMR)
+#Tabela 1620 - Série encadeada do índice de volume trimestral (Base: média 1995 = 100
+#https://sidra.ibge.gov.br/tabela/1620
+
+#pib <- read.csv(file='dados/arquivo04.csv',
+#                header=T,sep=";",dec=".", skip=4)
+
+#pib <- ts(pib[-nrow(pib),-1], start=c(1996,01), freq=4)
+
+#colnames(pib) <- c('Agricultura', 'Indústria', 'Serviços', 'PIB', 'Consumo Famílias', 'Gastos Governo', 'Formação Bruta de Capital Fixo', 'Exportações', 'Importações')
+
+#Tabela 1621 - Série encadeada do índice de volume trimestral com ajuste sazonal (Base: média 1995 = 100
+#https://sidra.ibge.gov.br/tabela/1621
+
+pib_sa <- read.csv(file='dados/arquivo05.csv',
+                    header=T,sep=";",dec=".", skip=4)
+pib_sa <- ts(pib_sa[-nrow(pib_sa),-1], start=c(1996,01), freq=4)
+colnames(pib_sa) <- c('Agricultura', 'Indústria', 'Serviços', 'PIB', 'Consumo Famílias', 'Gastos Governo', 'Formação Bruta de Capital Fixo', 'Exportações', 'Importações')
+
+#Analise do PIB e seus componentes
+dates <- seq(as.Date('1996-01-01'), as.Date('2023-03-01'), by='3 month')
+
+#pib <- data.frame(time=dates, pib)
+#pib1 <- ggplot(pib, aes(x=time))+
+#  geom_line(aes(y=pib$Agro), color="darkblue", #linewidth=.6)+
+#  xlab('')+ylab('AGRO')+
+#  theme(legend.position = 'top')
+#library(easyGgplot2)
+#ggplot2.multiplot(pib1, pib2, pib3, pib4, pib5, pib6, pib7, pib8, pib9, cols=3)
+
+gtsplot(pib_sa, dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - NÍVEL DE ATIVIDADE
+
+``` {r upe4, fig.cap = 'PRODUTO INTERNO BRUTO - IBGE'}
+### Variacao Marginal (comparo com o trimestre anterior)
+margem <- (pib_sa/stats::lag(pib_sa,-1)-1)*100
+colnames(margem) <- colnames(pib_sa)
+
+#dates <- seq(as.Date('1996-04-01'), as.Date('2022-12-01'), by='3 month')
+#gtsplot(margem, dates=dates)
+
+trimestral <- (pib_sa/stats::lag(pib_sa,-4)-1)*100
+colnames(trimestral) <- colnames(pib_sa)
+
+#dates <- seq(as.Date('1997-01-01'), as.Date('2022-12-01'), by='3 month')
+#Conjuntura6
+#gtsplot(trimestral, dates=dates)
+
+### Acumulado em 4 trimestres
+anual <- (((pib_sa+stats::lag(pib_sa,-1)+stats::lag(pib_sa,-2)+stats::lag(pib_sa,-3))/4)/
+            ((stats::lag(pib_sa,-4)+stats::lag(pib_sa,-5)+stats::lag(pib_sa,-6)+stats::lag(pib_sa,-7))/4)-1)*100
+colnames(anual) <- colnames(pib_sa)
+
+#dates <- seq(as.Date('1997-10-01'), as.Date('2022-12-01'), by='3 month')
+#Conjuntura7
+#gtsplot(anual, dates=dates)
+
+#Tabelas
+table.margem <- t(tail(round(margem, digits=2),
+                       n=1))
+#rownames(table.margem) <- colnames(trimestral[,-10])
+table.trimestral <- t(tail(round(trimestral[,-10], digits=2),
+                           n=1))
+table.anual <- t(tail(round(anual[,-10], digits=2),
+                      n=1))
+resumo <- cbind(table.margem, table.trimestral, table.anual)
+colnames(resumo) <- c('Margem', 'Trimestral', 'Anual')
+rownames(resumo) <- c('Agricultura', 'Indústria', 'Serviços', 'PIB', 'Consumo Famílias', 'Gastos Governo', 'Formação Bruta de Capital Fixo', 'Exportações', 'Importações')
+
+library(DT)
+
+datatable(resumo,
+          options = list(dom = 't',
+                         columnDefs = 
+                           list(list(className = 'dt-center', targets = "_all"))))
+```
+
+---
+class: center, middle
+### MACROECONOMIA - PESQUISA MENSAL DO COMÉRCIO
+
+```{r upe5, fig.cap = 'PESQUISA MENSAL DO COMÉRCIO - VOLUME'}
+restrito <- read.csv2('dados/arquivo07.csv', header=T, sep=";",dec=".", skip=4)
+
+colnames(restrito) <- c('X', 'Receita', 'Volume', 'Receita SA', "Volume SA")
+
+restrito <- select(restrito, Volume, 'Volume SA', Receita, 'Receita SA')
+
+restrito <- ts(restrito[-nrow(restrito),], start=c(2000,1), freq=12)
+
+## Importar o arquivo do comercio ampliado
+#https://sidra.ibge.gov.br/tabela/8881
+ampliado <- read.csv2('dados/arquivo08.csv', header=T, sep=";",dec=".", skip=4)
+
+colnames(ampliado) <- c('X', 'Receita', 'Volume', 'Receita SA', "Volume SA")
+
+ampliado <- select(ampliado, Volume, 'Volume SA', Receita, 'Receita SA')
+
+ampliado <- ts(ampliado[-nrow(ampliado),], start=c(2003,1), freq=12)
+
+## Importar o arquivo 'desagregado'
+#https://sidra.ibge.gov.br/tabela/8883
+desagregado <- read.csv2('dados/arquivo09.csv', header=T, sep=";", dec=".", skip=5)
+desagregado <- desagregado[-nrow(desagregado),]
+#desagregado <- na.omit(desagregado)
+desagregado <- desagregado[,c(2:ncol(desagregado))]
+desagregado <- ts(desagregado, start=c(2003,1), freq=12)
+
+## Nomes das categorias desagregadas do comercio
+names.desagregado <- c("Combustiveis e lubrificantes",	"Hipermercados, supermercados, produtos alimenticios, bebidas e fumo",	"Hipermercados e supermercados", "Tecidos, vestuario e calcados", "Moveis e eletrodomesticos",	"Artigos farmaceuticos, medicos, ortopedicos, de perfumaria e cosmeticos", "Livros, jornais, revistas e papelaria", "Equipamentos e materiais para escritorio, informatica e comunicacao", "Outros artigos de uso pessoal e domestico", "Veículos, motocicletas, partes e peças", "Material de construção")
+
+## Organizando os dados
+
+receita.desagregado <- desagregado[,c(1:11)]
+
+receitasa.desagregado <- desagregado[,c(12:22)]
+
+volume.desagregado <- desagregado[,c(23:33)]
+
+volumesa.desagregado <- desagregado[,c(34:44)]
+
+
+## Variacao mensal
+vmensal <- cbind(restrito[,c(2,4)], ampliado[,c(2,4)])
+vmensal <- (vmensal/stats::lag(vmensal,-1)-1)*100
+colnames(vmensal) <- c('Volume Restrito', 'Receita Restrito',
+                       'Volume Ampliado','Receita Ampliado')
+
+## Interanual
+interanual <- cbind(restrito[,c(2,4)], ampliado[,c(2,4)])
+interanual <- (interanual/stats::lag(interanual,-12)-1)*100
+colnames(interanual) <- colnames(vmensal)
+
+## Anual
+anual <- cbind(restrito[,c(2,4)], ampliado[,c(2,4)])
+anual <- (((anual+stats::lag(anual,-1)+stats::lag(anual,-2)+stats::lag(anual,-3)+
+              stats::lag(anual,-4)+stats::lag(anual,-5)+stats::lag(anual,-6)+
+              stats::lag(anual,-7)+stats::lag(anual,-8)+stats::lag(anual,-9)+
+              stats::lag(anual,-10)+stats::lag(anual,-11))/12)/
+            ((stats::lag(anual,-12)+stats::lag(anual,-13)+stats::lag(anual,-14)+
+                stats::lag(anual,-15)+stats::lag(anual,-16)+stats::lag(anual,-17)+
+                stats::lag(anual,-18)+stats::lag(anual,-19)+stats::lag(anual,-20)+
+                stats::lag(anual,-21)+stats::lag(anual,-22)+stats::lag(anual,-23))
+             /12)-1)*100
+colnames(anual) <- colnames(interanual)
+
+# Trimestral
+trimestral <- (vmensal+stats::lag(vmensal,-1)+stats::lag(vmensal,-2))/3
+colnames(trimestral) <- colnames(vmensal)
+
+table.vmensal <- t(tail(vmensal, n=1))
+table.trimestral <- t(tail(trimestral, n=1))
+table.interanual <- t(tail(interanual, n=1))
+table.anual <- t(tail(anual, n=1))
+table_pmc <- cbind(table.vmensal, table.trimestral, table.interanual,
+               table.anual)
+colnames(table_pmc) <- c('Mensal', 'Trimestral', 'Interanual', '12 meses')
+
+#Updated 15/11/18
+#ultima <- as.Date('2022-12-01')
+dates <- seq(as.Date('2003-01-01'), as.Date('2023-06-01'), by='1 month')
+
+#Variação em relação ao mes anterior
+#plot1 <- window(vmensal, start=c(2003,1))
+#gtsplot(plot1, dates=dates)
+
+#datatable(round(table_pmc,2),
+#          options = list(dom = 't',
+#                         columnDefs = 
+#                           list(list(className = 'dt-center', targets = "_all"))))
+
+vmensal.des.vol <- (volumesa.desagregado/
+                      stats::lag(volumesa.desagregado, -1)-1)*100
+
+colnames(vmensal.des.vol) <- names.desagregado
+
+########### Trimestral ################
+
+trim.des.vol <- (vmensal.des.vol+stats::lag(vmensal.des.vol,-1)+stats::lag(vmensal.des.vol,-2))/3
+
+colnames(trim.des.vol) <- colnames(vmensal.des.vol)
+
+############## Interanual ###############
+
+interanual.des.vol <- (volumesa.desagregado/stats::lag(volumesa.desagregado,-12)-1)*100
+
+colnames(interanual.des.vol) <- names.desagregado
+
+########## Anual ############
+
+anual.des.vol <- volumesa.desagregado
+
+anual.des.vol <- (((anual.des.vol+stats::lag(anual.des.vol,-1)+stats::lag(anual.des.vol,-2)+stats::lag(anual.des.vol,-3)+stats::lag(anual.des.vol,-4)+stats::lag(anual.des.vol,-5)+stats::lag(anual.des.vol,-6)+stats::lag(anual.des.vol,-7)+stats::lag(anual.des.vol,-8)+stats::lag(anual.des.vol,-9)+stats::lag(anual.des.vol,-10)+stats::lag(anual.des.vol,-11))/12)/((stats::lag(anual.des.vol,-12)+stats::lag(anual.des.vol,-13)+stats::lag(anual.des.vol,-14)+stats::lag(anual.des.vol,-15)+stats::lag(anual.des.vol,-16)+stats::lag(anual.des.vol,-17)+stats::lag(anual.des.vol,-18)+stats::lag(anual.des.vol,-19)+stats::lag(anual.des.vol,-20)+stats::lag(anual.des.vol,-21)+stats::lag(anual.des.vol,-22)+stats::lag(anual.des.vol,-23))/12)-1)*100
+
+colnames(anual.des.vol) <- names.desagregado
+
+table.mes <- t(tail(vmensal.des.vol, n=1))
+table.tri <- t(tail(trim.des.vol, n=1))
+table.int <- t(tail(interanual.des.vol, n=1))
+table.ano <- t(tail(anual.des.vol, n=1))
+table.des <- cbind(table.mes, table.tri, table.int, table.ano)
+colnames(table.des) <- c('Mensal', 'Trimestral', 'Interanual', '12 meses')
+
+datatable(round(table.des,2),
+          options = list(pageLength = 6,
+            dom = 't',
+                         columnDefs = 
+                           list(list(className = 'dt-center', targets = "_all"))))
+```
+
+---
+class: center
+### MACROECONOMIA - PESQUISA MENSAL DO COMÉRCIO
+
+```{r upe6, fig.cap = 'PESQUISA MENSAL DO COMÉRCIO - VOLUME -  CONTINUAÇÃO'}
+table.des2 <- table.des[-c(1:6),]
+datatable(round(table.des2,2),
+          options = list(pageLength = 5,
+            dom = 't',
+                         columnDefs = 
+                           list(list(className = 'dt-center', targets = "_all"))))
+```
+
+---
+class: center, middle
+### MACROECONOMIA - UTILIZAÇÃO CAPACIDADE INSTALADA
+
+```{r upe7, fig.cap = 'Utilização da capacidade instalada – indústria de transformação (FGV)'}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("UCI" = 24352),
+#first.date = "2001-01-01",
+#last.date = "2023-03-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo11.csv')
+
+uci <- read.csv2('dados/arquivo11.csv',
+                       header=T, sep=';',
+                  dec=",")[,-c(1,2)]
+
+dates <- seq(as.Date('2001-01-01'), as.Date('2023-03-01'), by='1 month')
+
+df <- data.frame(time=dates, uci=uci)
+uci_plot <- ggplot(df, aes(x=time))+
+  geom_line(aes(y=uci), linewidth=.8, colour='black')+
+  scale_x_date(date_breaks = "1 year",
+               labels = date_format("%Y"))+
+  xlab('Tempo')+ylab('% Utilização da Capacidade')+
+  theme_minimal() #Definindo tema
+
+uci_plot
+```
+
+---
+class: center, middle
+### MACROECONOMIA - ÍNDICE DE CONFIANÇA DO CONSUMIDOR
+
+```{r upe8, fig.cap = 'ÍNDICE DE CONFIANÇA DO CONSUMIDOR'}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Confiança do Consumidor" = 4393),
+#first.date = "2000-01-01",
+#last.date = "2023-07-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='confianca4393.csv')
+
+consumidor <- ts(read.csv2('dados/confianca4393.csv',
+                       header=T, sep=';', dec=",")[,-c(1,2)],
+             start=c(2000,01), freq=12)
+par(mfrow=c(1,1))
+plot(consumidor, bty='l', xlab='Tempo', ylab='Indice', xaxt='n', lwd=2)
+axis(1, at=c(2000:2023))
+grid(col='gray0')
+mtext('Indice de Confianca do Consumidor', side=3, line=1, font=2)
+```
+
+
+---
+class: center, middle
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+.pull-left[
+
+- O total de pessoas de um país divide-se em dois grandes grupos: a população inativa e a ativa. O primeiro grupo é composto, basicamente, por crianças e idosos, enquanto o segundo pelo grupo de pessoas que **estariam aptas a exercer algum tipo de trabalho**.
+
+- A **população em idade ativa (PIA)**, por sua vez, se divide em **população economicamente ativa (PEA)** e **população não economicamente ativa (PNEA)**. No primeiro grupo estão as **pessoas ocupadas (PO)** e as **pessoas desocupadas, mas em busca de ocupação (PD)**, enquanto no segundo estão as **pessoas desocupadas, que não estão buscando ocupação**.
+]
+
+.pull-right[
+
+- $População = PIA + Inativos$
+
+- $PIA = PEA + PNEA$
+
+- $PEA = PO + PD$
+
+- $PD = PEA - PO$
+
+- $Desemprego = \frac{PD}{PEA} = 1 - \frac{PO}{PEA}$
+
+- $Participação =  \frac{PEA}{PIA}$
+
+-  A **Taxa de Desemprego** resulta da interação entre oferta e demanda de trabalho. O grau de ociosidade nesse mercado vai definir a qual taxa os salários irão crescer(maior, menor ou igual ao crescimento da produtividade da economia).
+]
+
+---
+class: center, middle
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe9, fig.cap = 'O MERCADO DE TRABALHO'}
+#datamt0 <- get_sidra(api='/t/6022/n1/all/v/606/p/all') #Populacao
+#https://apisidra.ibge.gov.br/values/t/6318/n1/all/v/1641/p/all/c629/32385,32386,32387,32446
+#datamt1 <- get_sidra(api='t/6318/n1/all/v/1641/p/all/c629/32385,32386,32387,32446') #PIA+PD+PEA
+#datamt5 <-get_sidra(api='/t/6320/n1/all/v/4090/p/all/c11913/31722,31723,31724,31727,31731,96165,96170,96171') #PIA
+#http://api.sidra.ibge.gov.br/values/t/6323/n1/all/v/4090/p/first%2077/c693/all
+
+#write.csv2(datamt0, file='arquivo12a.csv')
+
+dataa <- ts(read.csv2('dados/arquivo12a.csv', header=T,
+                     sep=';'),
+           start=c(2012,03), freq=12)
+
+data <- ts(read.csv2('dados/arquivo12.csv', header=T,
+                     sep=';', dec=',', skip=4)[,-1],
+           start=c(2012,03), freq=12)
+
+data <- na.omit(data)
+
+data <- cbind.data.frame(dataa[,6], data)
+
+### Calcular Series e Taxas
+pnea <- data[,2] - data[,3] # Populacao nao economicamente ativa
+pia.pop <- data[,2]/data[,1]*100 # PIA/Populacao PIA= Pop. Idade Ativa
+participacao <- data[,3]/data[,2]*100 # PEA/PIA PEA=PO+PD
+ocupacao.pia <- data[,4]/data[,2]*100 # PO/PIA PO=POp Ocupada
+desemprego <- data[,5]/data[,3]*100 #PD/PEA PD=Pop Desocupada
+
+macro <- cbind(data[,1:5], pnea, pia.pop, participacao, ocupacao.pia,
+               desemprego)
+colnames(macro) <- c('População', 'PIA', 'PEA', 'PO', 'PD', 'PNEA',
+                     'PIA/POP', 'PARTICIPACAO', 'PO/PIA', 'DESEMPREGO')
+
+macro <- ts(macro, start=c(2012,03), freq=12)
+### Variacao internanual
+interanual <- (macro/stats::lag(macro,-12)-1)*100
+colnames(interanual) <- colnames(macro)
+
+### Variacao internanual
+interdecanual <- (macro/stats::lag(macro,-120)-1)*100
+colnames(interanual) <- colnames(macro)
+
+interanual1<-interanual[,-1]
+#plot1 <- window(interanual1, end=c(2016,6))
+
+dates <- seq(as.Date('2012-03-01'),
+             as.Date('2023-06-01'), by='1 month')
+macro1 <- macro[,-1]
+gtsplot(macro1, dates=dates)
+```
+
+---
+class: center
+### MACROECONOMIA - O MERCADO DE TRABALHO
+```{r upe10}
+#Tabela
+
+c1 <- tail(macro, n=1)
+c2 <- macro[nrow(macro)-12,]
+c3 <- tail(interanual, n=1)
+c4 <- macro[nrow(macro)-120,]
+table <- t(rbind(c1,c2,c3,c4))
+colnames(table) <- c('Jun/23', 'Jun/22', 'Variação', 'Jun/13')
+
+library(DT)
+
+datatable(round(table,2),
+          options = list(pageLength = 10,
+                         dom = 't',
+                         columnDefs = 
+                           list(list(className = 'dt-center', targets = "_all"))))
+```
+
+---
+class: center
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe11, fig.cap = 'Desagregação da População Ocupada'}
+#datab <- get_sidra(api='t/6320/n1/all/v/4090/p/all/c11913/31722,31723,31724,31727,31731,96170,96171')
+
+datab <- ts(read.csv2('dados/arquivo12b.csv', header=T,
+                     sep=';', dec=',', skip=4)[,-1],
+           start=c(2012,03), freq=12)
+
+pesos.po <- na.omit(datab)
+
+pesos.po1 <- (pesos.po/data[,4])*100
+
+colnames(pesos.po1) <- c("Privado com Carteira",
+                         "Privado sem Carteira",
+                         "Trabalhador Doméstico",
+                         "Setor Público",
+                         "Empregador","Conta Própria",
+                         "Trabalhador Familiar Auxiliar")
+
+### Gerar Grafico
+pie(colMeans(pesos.po1), col=c('red','black','blue','darkblue',
+                               'darkgreen', '367', '556'),
+    main='Populacao Ocupada PNADC mensal desagregada (%)')
+```
+
+---
+class: center
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe12}
+
+pesos.po1a <- window(pesos.po1, start=c(2012,3), end=c(2016,12))
+pesos.po2 <- window(pesos.po1, start=c(2017,3), end=c(2020,3))
+pesos.po3 <- window(pesos.po1, start=c(2020,3))
+pie1 <- colMeans(pesos.po1a)
+pie2 <- colMeans(pesos.po2)
+pie3 <- colMeans(pesos.po3)
+
+table <- cbind(pie1, pie2, pie3)
+
+colnames(table) <- c("Média até 2016", "Média 2017 a 2020", "Média pós 2020")
+
+datatable(round(table,2),
+          options = list(pageLength = 7,
+                         dom = 't',
+                         columnDefs = 
+                           list(list(className = 'dt-center', targets = "_all"))))
+```
+
+---
+class: center
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe13, fig.cap = 'Rendimentos reais - média mensal pessoas com + 14 anos', out.width  = "100%", fig.align  = "center"}
+#data_rend <- get_sidra(api='/t/6387/n1/all/v/5935/p/all')
+#write.csv2(data_rend, file='arquivo12c.csv')
+
+renda <- ts(read.csv2('dados/arquivo12c.csv', header=T,
+                     sep=';'),
+           start=c(2012,03), freq=12)
+
+renda <- renda[,6]
+
+dates <- seq(as.Date('2012-03-01'), as.Date('2023-06-01'), by='1 month')
+
+renda <- data.frame(time=dates, renda)
+renda1 <- ggplot(renda, aes(x=time))+
+  geom_line(aes(y=renda), color="darkblue", linewidth=.9)+
+  scale_y_continuous(limits=c(2000, 3500), n.breaks = 10)+
+  scale_x_date(date_breaks = "1 year",
+               labels = date_format("%Y"))+
+  xlab('')+ylab('Reais')+
+  theme(legend.position = 'top')
+
+ggplotly(renda1) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.2,
+                      title=''))
+```
+
+---
+class: center
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe14}
+#Entrando dados no R
+atual <-  as.Date("2023-06-01")
+dados1 <- read.csv2('dados/junho_2023.csv', header=T, sep=";", dec = ".")
+colnames(dados1)[1] <- 'date'
+dados1$date <- seq(as.Date('2021-01-01'),to=atual,by='1 month')
+dados1a <- dados1 
+dados1a$ano <- strftime(dados1a$date, format="%Y") 
+dados1a$mes <- strftime(dados1a$date, format="%B") 
+
+saldo_21 <- dados1a %>% filter(ano=='2021')
+
+saldo_21 <- saldo_21 %>%
+  select(c(ano, mes, Saldo_Manga))
+
+saldo_22 <- dados1a %>% filter(ano=='2022')
+
+saldo_22 <- saldo_22 %>%
+  select(c(ano, mes, Saldo_Manga))
+
+
+saldo_23 <- dados1a %>% filter(ano=='2023')
+
+saldo_23 <- saldo_23 %>%
+  select(c(ano, mes, Saldo_Manga))
+
+saldom <- rbind(saldo_21, saldo_22, saldo_23)
+saldom$mes <- factor(saldom$mes,levels = c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", 
+                                           "Junho", "Julho", "Agosto", "Setembro", "Outubro",
+                                           "Novembro", "Dezembro"))
+
+#Gráfico com Ggplot2
+
+mycolors2 <- c("orange", "lightblue3", "darkgreen")
+
+g1 <- ggplot() +  #estetica vai valer para todos os geom's
+  geom_col(data=saldom, aes(x=mes, y=Saldo_Manga, fill=ano), size=2, width = 0.9, position = "dodge")+
+    scale_fill_manual(values=mycolors2)+
+    labs(y= "Saldo de Emprego Manga VSF (unidade)", x= "Meses do Ano", title='',
+       caption = "")+
+    scale_y_continuous(limits=c(-2100, 1600), n.breaks = 10, expand = expansion(add=c(0,0.5)))+
+  theme_minimal()+ #Definindo tema
+  theme(axis.text.x=element_text(angle=25, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=12, margin = margin(l=20)),
+        axis.title.x = element_text(size=12, margin = margin(b=20)),
+        axis.title.y = element_text(size=12, face = "bold", margin = margin(l=20)),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+
+g1
+```
+
+---
+class: center
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe15}
+saldo_21 <- dados1a %>% filter(ano=='2021')
+
+saldo_21u <- saldo_21 %>%
+  select(c(ano, mes, Saldo_uva))
+
+saldo_22 <- dados1a %>% filter(ano=='2022')
+
+saldo_22u <- saldo_22 %>%
+  select(c(ano, mes, Saldo_uva))
+
+
+saldo_23 <- dados1a %>% filter(ano=='2023')
+
+saldo_23u <- saldo_23 %>%
+  select(c(ano, mes, Saldo_uva))
+
+saldom <- rbind(saldo_21u, saldo_22u, saldo_23u)
+saldom$mes <- factor(saldom$mes,levels = c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", 
+                                           "Junho", "Julho", "Agosto", "Setembro", "Outubro",
+                                           "Novembro", "Dezembro"))
+
+#Gráfico com Ggplot2
+
+mycolors2 <- c("darkgreen", "lightblue3", "purple")
+
+g1 <- ggplot() +  #estetica vai valer para todos os geom's
+  geom_col(data=saldom, aes(x=mes, y=Saldo_uva, fill=ano), size=2, width = 0.9, position = "dodge")+
+    scale_fill_manual(values=mycolors2)+
+    labs(y= "Saldo de Emprego Uva VSF (unidade)", x= "Meses do Ano", title='',
+       caption = "")+
+    scale_y_continuous(limits=c(-2600, 2200), n.breaks = 10, expand = expansion(add=c(0,0.5)))+
+  theme_minimal()+ #Definindo tema
+  theme(axis.text.x=element_text(angle=25, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=12, margin = margin(l=20)),
+        axis.title.x = element_text(size=12, margin = margin(b=20)),
+        axis.title.y = element_text(size=12, face = "bold", margin = margin(l=20)),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+
+g1
+```
+
+---
+class: center, middle
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe16}
+#Entrando com o restante dos dados
+
+load("dados/junho_23_caged.RData")
+
+#dados_06_vsf$sexo <- lapply(dados_06_vsf$sexo, factor)
+
+dados_06_vsf$sexo[dados_06_vsf$sexo == 1] <- 0
+dados_06_vsf$sexo[dados_06_vsf$sexo == 3] <- 1
+
+dados_06_vsf <- mutate(dados_06_vsf,
+                sexo = factor(sexo, levels = 0:1, labels = c("Masculino", "Feminino")))
+
+# Mantendo apenas 
+
+#Separando as admissoes e as demissoes
+dados_06_vsf_positivos <-dados_06_vsf%>% filter(saldo_movim=="1")
+dados_06_vsf_negativos <-dados_06_vsf%>% filter(saldo_movim=="-1")
+
+#Mantendo apenas o agronegocio
+secao_positivos <-dados_06_vsf_positivos%>% filter(secao=="A")
+secao_negativos <-dados_06_vsf_negativos%>% filter(secao=="A")
+
+#Mantendo apenas a uva
+subclasse_positivos <-dados_06_vsf_positivos%>% filter(subclasse=="132600")
+subclasse_negativos <-dados_06_vsf_negativos%>% filter(subclasse=="132600")
+
+subclasse_positivos <- mutate(subclasse_positivos,
+                grau_instrucao = factor(grau_instrucao, levels = 1:13, 
+                                        labels = c("Analfabeto",
+                                                   "Até 5ª Incompleto",
+                                                   "5ª Completo Fundamental",
+                                                   "6ª a 9ª Fundamental",
+                                                   "Fundamental Completo",
+                                                   "Médio Incompleto",
+                                                   "Médio Completo",
+                                                   "Superior Incompleto",
+                                                   "Superior Completo",
+                                                   "Mestrado",
+                                                   "Doutorado",
+                                                   "Pós-Graduação completa",
+                                                   "Não Identificado")))
+
+g2 <- ggplot(data = subclasse_positivos, aes(x = sexo, y = ..count..)) +
+  geom_bar(fill='steelblue')+
+    labs(y= "Contratados Uva - VSF", x= "Gênero", title='',
+       caption = "")+
+  theme_minimal()+ #Definindo tema
+  theme(axis.text.x=element_text(angle=0, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=10, margin = margin(l=20)),
+        axis.title.x = element_text(size=10, face = "bold", margin = margin(b=20)),
+        axis.title.y = element_text(size=10, face = "bold", margin = margin(l=20)),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, size=12),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+
+g2
+```
+
+---
+class: center, middle
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe17}
+g3 <- ggplot(data=subclasse_positivos, aes(x=idade))+
+  geom_histogram(binwidth=3, fill="#69b3a2", color="#e9ecef", alpha=0.9)+
+    scale_x_continuous(limits=c(17, 67), n.breaks = 10, expand = expansion(add=c(0,0.5)))+
+    labs(y= "Contratados Uva - VSF", x= "Idades", title='',
+       caption = "")+
+  theme_minimal() +
+  theme(axis.text.x=element_text(angle=0, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=10, margin = margin(l=20)),
+        axis.title.x = element_text(size=10, face = "bold", margin = margin(b=20)),
+        axis.title.y = element_text(size=10, face = "bold", margin = margin(l=20)),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, size=12),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+
+g3
+```
+
+---
+class: center, middle
+### MACROECONOMIA - O MERCADO DE TRABALHO
+
+```{r upe18}
+g4 <- ggplot(data = subclasse_positivos, aes(x = grau_instrucao, y = ..count..)) +
+  geom_bar(fill='steelblue')+
+    scale_y_continuous(limits=c(0, 1000), n.breaks = 10, expand = expansion(add=c(0,0.5)))+
+labs(y= "Contratados", x= "Grau de Instrução", title='',
+       caption = "")+
+  theme_minimal() +
+  theme(axis.text.x=element_text(angle=30, hjust=1, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=14, margin = margin(l=20)),
+        axis.title.x = element_text(size=14, face = "bold", margin = margin(b=20)),
+        axis.title.y = element_text(size=14, face = "bold", margin = margin(l=20)),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+
+g4
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+
+.pull-left[
+
+- A inflação é a taxa de crescimento do nível geral de preços entre dois períodos distintos.
+
+- No curto prazo, diversos fatores podem afetar a taxa de crescimento dos preços, desde uma quebra de
+safra, que pode gerar um aumento localizado nos preços de alimentos, o que gera uma pressão inflacionária, até questões cambiais que aumentem o custo de importação de insumos em diversas cadeias produtivas, acaba gerando também uma pressão inflacionária.
+
+- **A taxa de crescimento do nível geral de preços é dada pela diferença entre a taxa de crescimento dos meios de pagamento e do produto real da economia**.
+
+]
+
+.pull-right[
+
+- Se a inflação é determinada positivamente pela taxa de crescimento dos meios de pagamento, a condução frouxa da política monetária gera mais inflação. Dito de outra forma, pode-se relacionar a taxa de crescimento dos meios de pagamento à inflação através da taxa de juros.
+
+- A política monetária via taxa de juros é o instrumento para controlar a inflação, consequentemente. política monetária será expansionista se a taxa de juros de curto prazo estiver abaixo daquela considerada de equilíbrio entre oferta e demanda por dinheiro.
+
+]
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+
+```{r upe19}
+library(wbstats)
+#CPI <- wb_data("FP.CPI.TOTL", start_date = 2000, end_date = 2022)
+
+#BRA_CPI <- filter (CPI, iso3c == 'BRA')
+#colnames(BRA_CPI)[5] <- 'BRA_CPI'
+#USA_CPI <- filter (CPI, iso3c == 'USA')
+#colnames(USA_CPI)[5] <- 'USA_CPI'
+#DEU_CPI <- filter (CPI, iso3c == 'DEU')
+#colnames(DEU_CPI)[5] <- 'DEU_CPI'
+#CAN_CPI <- filter (CPI, iso3c == 'CAN')
+#colnames(CAN_CPI)[5] <- 'CAN_CPI'
+#FRA_CPI <- filter (CPI, iso3c == 'FRA')
+#colnames(FRA_CPI)[5] <- 'FRA_CPI'
+#ITA_CPI <- filter (CPI, iso3c == 'ITA') 
+#colnames(ITA_CPI)[5] <- 'ITA_CPI'
+#JPN_CPI <- filter (CPI, iso3c == 'JPN') 
+#colnames(JPN_CPI)[5] <- 'JPN_CPI'
+#GBR_CPI <- filter (CPI, iso3c == 'GBR')
+#colnames(GBR_CPI)[5] <- 'GBR_CPI'
+#MEX_CPI <- filter (CPI, iso3c == 'MEX')
+#colnames(MEX_CPI)[5] <- 'MEX_CPI'
+
+#CPI <- tibble(BRA_CPI[,5], USA_CPI[,5], DEU_CPI[,5], CAN_CPI[,5], FRA_CPI[,5], ITA_CPI[,5], JPN_CPI[,5], GBR_CPI[,5], MEX_CPI[,5])
+
+#write.csv2(CPI, file='arquivo13.csv')
+
+CPI <- ts(read.csv2('dados/arquivo13.csv', header=T,
+                     sep=';')[,-1], start=c(2000))
+
+INF <- (CPI/stats::lag(CPI,-1)-1)*100
+
+colnames(INF) <- c('BRA_INF', 'USA_INF', 'DEU_INF', 'CAN_INF', 'FRA_INF', 'ITA_INF', 'JPN_INF', 'GBR_INF', 'MEX_INF')
+
+inflacao <- ts(INF,start=c(2001))
+dates <- seq(as.Date('2001-01-01'),
+             as.Date('2022-01-01'), by='1 year')
+gtsplot(inflacao, dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+
+```{r upe20, fig.cap = 'Variação IPCA por Grupos acumulado 12 meses', fig.align  = "center"}
+#https://sidra.ibge.gov.br/tabela/7060
+
+ipca <- ts(read.csv(file='dados/arquivo14.csv', header=T,sep=";",dec=".")[,-1], start=c(1999,08), freq=12)
+
+dates <- seq(as.Date('2003-02-01'), as.Date('2023-07-01'), by='1 month')
+#Conjuntura 23
+#gtsplot(window(ipca[,c(1,4:11)], start=c(2003,02)), dates=dates)
+
+####### Variacoes acumuladas em 12 meses dos grupos ########
+fator <- (1+(ipca[,c(1,4:11)]/100))
+vanual <- (fator*stats::lag(fator,-1)*stats::lag(fator,-2)*stats::lag(fator,-3)*stats::lag(fator,-4)*stats::lag(fator,-5)*stats::lag(fator,-6)*stats::lag(fator,-7)*stats::lag(fator,-8)*stats::lag(fator,-9)*stats::lag(fator,-10)*stats::lag(fator,-11)-1)*100
+colnames(vanual) <- colnames(ipca[,c(1,4:11)])
+
+############ GRAFICOS DOS GRUPOS NO ACUMULADO EM 12 MESES #########
+gtsplot(window(vanual,start=c(2003,2)), dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+
+```{r upe21, fig.cap = 'IPCA por Grupos - Pesos', fig.align  = "center"}
+#Conjuntura 24
+gtsplot(window(ipca[,c(12,15:22)], start=c(2003,02)), dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+
+```{r upe22, fig.cap = 'IPCA por Grupos - Manga e Uva', fig.align  = "center"}
+#Conjuntura 23
+gtsplot(window(ipca[,c(2:3)], start=c(2003,02)), dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+
+```{r upe23, fig.cap = 'IPCA por Grupos - Pesos - Manga e Uva', fig.align  = "center"}
+#Conjuntura 24
+gtsplot(window(ipca[,c(13:14)], start=c(2003,02)), dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+```{r upe24, fig.cap = 'IPCA Acumulado em 12 meses', out.width  = "100%", fig.align  = "center"}
+#https://sidra.ibge.gov.br/tabela/1737
+data <- ts(read.csv2('dados/arquivo13a.csv', header=T,
+                     sep=';', dec='.', skip=3)[,-1],
+           start=c(1980,12), freq=12)
+
+data <- na.omit(data) %>%
+        window(start = c(1997,1))
+
+colnames(data) <- c('IPCA', 'IPCA-Var Mensal', 'IPCA - Acumulado')
+
+dates <- seq(as.Date('1997-01-01'), as.Date('2023-07-01'), by='1 month')
+
+ipca_ano <- data.frame(time=dates, ipca_ano=data[,3])
+ipca1_ano <- ggplot(ipca_ano, aes(x=time))+
+  geom_line(aes(y=ipca_ano), color="darkblue", linewidth=.6)+
+  xlab('Meses do Ano')+ylab('IPCA - Variação Acumulada em 12 meses (%)')+
+  theme_minimal()
+
+ggplotly(ipca1_ano) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.2,
+                      title=''))
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+```{r upe25, fig.cap = 'IPCA Mensal', fig.align  = "center"}
+contribuicao <- ipca[,c(1,4:11)]*ipca[,c(12,15:22)]/100
+colnames(contribuicao) <- colnames(ipca[,c(1,4:11)])
+
+##### O IPCA sera a soma das contribuicoes de cada grupo #####
+ipcamensal <- ts(round(apply(contribuicao, MARGIN=1, FUN=sum), digits=2), start=c(1999,8), freq=12)
+
+plot(ipcamensal, bty='l', col='red', xlab='', ylab='% a.m.',
+     main='IPCA Mensal')
+
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INFLAÇÃO
+```{r upe26}
+#TABELA COM AS CONTRIBUICOES DOS ULTIMOS MESES
+contribuicao <- tail(round(cbind(ipcamensal,contribuicao), digits=2), n=4)
+contribuicao <- t(contribuicao)
+colnames(contribuicao) <- c('Abril/23', 'Maio/23', 'Junho/23', 'Julho/23')
+rownames(contribuicao) <- c('IPCA Mensal', 'Alimentos','Habitação', 'Residência', 'Vestuário', 'Transportes', 'Saúde','Despesas Pessoais', 'Educação', 'Comunicação')
+
+datatable(contribuicao,
+          options = list(pageLength = 10,
+                         dom = 't',
+                         columnDefs = 
+                           list(list(className = 'dt-center', targets = "_all"))))
+```
+
+
+---
+class: center, middle
+### MACROECONOMIA - FLUXO DE CRÉDITO
+```{r upe27}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Total" = 20631, "Pessoa Jurídica" = 20632, "Pessoa Física" = 20633, "Créditos Livres" = 20634, "Créditos Direcionados" = 20685),
+#first.date = "2011-03-01",
+#last.date = "2023-06-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo20.csv')
+
+concessoes <- ts(read.csv2('dados/arquivo20.csv',
+                       header=T, sep=';')[,-c(1,2)],
+             start=c(2011,03), freq=12)
+
+dates <- seq(as.Date('2011-03-01'), as.Date('2023-06-01'), by='1 month')
+gtsplot(concessoes[,c(2:5)], dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - TAXAS DE JUROS
+```{r upe28, fig.cap = 'Taxa de Juros % a.a.'}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Total" = 20714, "Pessoa Jurídica" = 20715, "Pessoa Física" = 20716, "Créditos Livres" = 20717, "Créditos Direcionados" = 20756),
+#first.date = "2011-03-01",
+#last.date = "2023-06-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo23.csv')
+
+juros <- ts(read.csv2('dados/arquivo23.csv',
+                       header=T, sep=';')[,-c(1,2)],
+             start=c(2011,03), freq=12)
+
+dates <- seq(as.Date('2011-03-01'), as.Date('2023-06-01'), by='1 month')
+
+gtsplot(juros[,c(2:5)], dates=dates)
+
+## Interanual
+#interanual <- (juros[,c(2:5)]/stats::lag(juros[,c(2:5)],-12)-1)*100
+#colnames(interanual) <- c('Pessoa Jurídica', 'Pessoa Física', 'Recursos Livre', 'Recursos Direcionados')
+
+#dates <- seq(as.Date('2012-03-01'), as.Date('2023-06-01'), by='1 month')
+#gtsplot(interanual, dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - INADIMPLENCIA
+```{r upe29, fig.cap = 'Inadimplência'}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Total" = 21082, "Pessoa Jurídica" = 21083, "Pessoa Física" = 21084, "Créditos Livres" = 21085, "Créditos Direcionados" = 21132),
+#first.date = "2011-03-01",
+#last.date = "2023-06-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo25.csv')
+
+inadimp <- ts(read.csv2('dados/arquivo25.csv',
+                       header=T, sep=';', 
+                      dec = ',')[,-c(1,2)], start=c(2011, 3), freq=12)
+
+colnames(inadimp) <- c('Total', 'Pessoa Jurídica', 'Pessoa Física', 'Recursos Livre', 'Recursos Direcionados')
+
+dates <- seq(as.Date('2011-03-01'), as.Date('2023-06-01'), by='1 month')
+gtsplot(inadimp[,c(2:5)], dates=dates)
+
+## Interanual
+#interanual <- (inadimp[,c(2:5)]/stats::lag(inadimp[,c(2:5)],-12)-1)*100
+#colnames(interanual) <- c('Pessoa Jurídica', 'Pessoa Física', 'Recursos Livre', 'Recursos Direcionados')
+
+#dates <- seq(as.Date('2012-03-01'), as.Date('2023-06-01'), by='1 month')
+#gtsplot(interanual, dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - ENDIVIDAMENTO DAS FAMÍLIAS
+```{r upe30, fig.cap = 'Endividamento das Famílias'}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Amortização" = 19879, "Juros" = 19880, "Serviço" = 19881, "Servicos ex-habit" = 20399, "Endividamento" = 19882, "Endividamento ex-habit" = 20400),
+#first.date = "2005-03-01",
+#last.date = "2021-08-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo26.csv')
+
+endivida <- ts(read.csv2('dados/arquivo26.csv',
+                       header=T, sep=';', 
+                      dec = ',')[,-c(1,2)], start=c(2005, 3), freq=12)
+
+colnames(endivida) <- c("Amortização", "Juros", "Serviço", "Servicos ex-habit", "Endividamento", "Endividamento ex-habit")
+
+dates <- seq(as.Date('2005-03-01'), as.Date('2021-08-01'), by='1 month')
+gtsplot(endivida, dates=dates)
+```
+
+---
+class: center, middle
+
+#OBRIGADO!
+
+João Ricardo F. de Lima <br>
+Email: joao.ricardo@embrapa.br
+
+
+https://www.embrapa.br/observatorio-da-manga <br>
+https://www.embrapa.br/observatorio-da-uva
+
+
+Telefones:<br>
+87-3866-3667  
+87-99961-5799 
