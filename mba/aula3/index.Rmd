@@ -20,6 +20,7 @@ params:
   references: FALSE # TRUE = mostrar último slide com referências
   references_path: "https://gist.githubusercontent.com/analisemacro/1521d6cd7d9239cc2343269ca6f99a0a/raw/58d10d00e7a55ef38aac695693cc5513952fbb1a/references.bib" # caminho para arquivo .bib
   logo_slides: "https://bit.ly/3JJ2ZXA"
+
 ---
 class: center
 
@@ -1265,6 +1266,377 @@ colnames(endivida) <- c("Amortização", "Juros", "Serviço", "Servicos ex-habit
 
 dates <- seq(as.Date('2005-03-01'), as.Date('2021-08-01'), by='1 month')
 gtsplot(endivida, dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLITICA MONETÁRIA
+
+```{r upe31, fig.cap = 'POLITICA MONETÁRIA'}
+# Coleta e tratamento de dados
+selic_ipca <- GetBCBData::gbcbd_get_series(
+  id          = c("IPCA em 12 meses" = "13522", "Taxa SELIC" = "4189"),
+  first.date  = "1999-08-01", 
+  use.memoise = FALSE
+) %>% 
+  dplyr::as_tibble() %>% 
+  dplyr::select(
+    "date"     = ref.date, 
+    "variable" = series.name, 
+    value
+  )
+
+# Gráfico com o ggplot2
+selic_ipca %>% 
+  ggplot2::ggplot(ggplot2::aes(x = date, y = value, colour = variable)) +
+  ggplot2::geom_line(size = 1) +
+  ggplot2::labs(title = "Inflação vs. Taxa de Juros - Selic",
+                x = "",
+                y = "% a.a.",
+                caption = "Dados: SGS/BCB") +
+  ggplot2::scale_colour_manual(values = c(
+             "#282f6b", # blue
+             "#b22200" # red
+  )) +
+  ggplot2::facet_wrap(~variable, nrow = 2, scales = "free_y") +
+  ggplot2::theme_minimal()+
+  ggplot2::theme(legend.position = "none")
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLÍTICA FISCAL
+```{r upe32, fig.cap = 'POLÍTICA FISCAL'}
+# https://www.gov.br/tesouronacional/pt-br/estatisticas-fiscais-e-planejamento/resultado-do-tesouro-nacional-rtn
+
+data <- read_xlsx(
+  path = "dados/serie_historica_jun23.xlsx",
+  sheet = "1.1",
+  col_names = TRUE,
+  col_types = 'numeric',
+  skip = 4
+  ) 
+
+data <- t(data[-c(69:76),-1])#retira as ultimas linhas texto 
+data <- ts((data[1:318,]), start=c(1997,01), freq=12)#ajustar linhas quando mudar mes. 318=junho
+
+names <- t(read.table('dados/arquivo28.csv', header=F))
+colnames(data) <- names
+
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("PIB" = 4382),
+#first.date = "1997-01-01",
+#last.date = "2023-06-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo28a.csv')
+
+pib <- ts(read.csv2('dados/arquivo28a.csv', header=T,
+                     sep=';', dec=',')[,-c(1:2)],
+           start=c(1997,01), freq=12)
+
+ipca <- ts(read.csv2('dados/arquivo13a.csv', header=T,
+                     sep=';', dec='.', skip=3)[,-1],
+           start=c(1980,12), freq=12)
+
+colnames(ipca) <- c('IPCA', 'IPCA-Var Mensal', 'IPCA - Acumulado')
+
+ipca <- na.omit(ipca) %>%
+        window(start = c(1997,1), end = c(2023,6))
+
+ipca <- ipca[,1]
+
+### Deflacionar Séries
+real <- data*(ipca[length(ipca)]/ipca)
+colnames(real) <- colnames(data)
+pib.real <- pib*(ipca[length(ipca)]/ipca)
+
+### Acumular em 12 meses
+real12 <- real+(stats::lag(real,-1)+stats::lag(real,-2)+stats::lag(real,-3)+
+stats::lag(real,-4)+stats::lag(real,-5)+stats::lag(real,-6)+stats::lag(real,-7)+
+stats::lag(real,-8)+stats::lag(real,-9)+stats::lag(real,-10)+stats::lag(real,-11))
+colnames(real12) <- colnames(data)
+
+data12 <- data+stats::lag(data,-1)+stats::lag(data,-2)+stats::lag(data,-3)+
+stats::lag(data,-4)+stats::lag(data,-5)+stats::lag(data,-6)+stats::lag(data,-7)+
+stats::lag(data,-8)+stats::lag(data,-9)+stats::lag(data,-10)+stats::lag(data,-11)
+colnames(data12) <- colnames(data)
+
+### Percentual do PIB
+ppib <- data12/pib*100
+colnames(ppib) <- colnames(data)
+
+## Variação interanual real
+interanual <- (real/stats::lag(real,-12)-1)*100
+## Variação mensal acumulada em 12 meses (real)
+mensal <- (real12/stats::lag(real12,-1)-1)*100
+colnames(mensal) <- colnames(data)
+## Variação interreal12
+interanual2 <- (real12/stats::lag(real12,-12)-1)*100
+colnames(interanual2) <- colnames(data)
+
+## Variação acumulada em 12 meses
+anual <- (((real12+stats::lag(real12,-1)+stats::lag(real12,-2)+stats::lag(real12,-3)
++stats::lag(real12,-4)+stats::lag(real12,-5)+stats::lag(real12,-6)+stats::lag(real12,-7)
++stats::lag(real12,-8)+stats::lag(real12,-9)+stats::lag(real12,-10)+
+stats::lag(real12,-11))/12)/
+((stats::lag(real12,-12)+stats::lag(real12,-13)+
+stats::lag(real12,-14)+stats::lag(real12,-15)
++stats::lag(real12,-16)+stats::lag(real12,-17)+stats::lag(real12,-18)
++stats::lag(real12,-19)+stats::lag(real12,-20)+stats::lag(real12,-21)
++stats::lag(real12,-22)+stats::lag(real12,-23))/12)-1)*100
+colnames(anual) <- colnames(data)
+
+#Montar tabela#
+#c1 <- tail(real[,c(1,2,15,24,33,34,35,36,37,60,61)], n=1)
+#c2 <- real[nrow(real)-12,c(1,2,15,24,33,34,35,36,37,60,61)]
+#c3 <- tail(interanual[,c(1,2,15,24,33,34,35,36,37,60,61)], n=1)
+#table <- t(rbind(c1,c2,c3))
+#colnames(table) <- c('Jun/23', 'Jun/22', 'Variação (%)')
+
+dates <- seq(as.Date('2003-01-01'), as.Date('2023-06-01'), by='1 month')
+
+real12a <-data.frame(window(real12, start=c(2003,01)),dates)
+
+receitas <- real12a[,33]/1000
+despesas <- real12a[,34]/1000
+
+dados <- data.frame(receitas, despesas, dates)
+dados2 <- melt(dados, id.var='dates')
+
+ggplot(data=dados2)+
+  geom_line(aes(x=dates, y=value, colour=variable), linetype = "solid",size = 1)+
+  scale_colour_manual(values = c("blue", "red"))+
+  scale_y_continuous(n.breaks = 10)+
+  scale_x_date(breaks = date_breaks("2 years"),
+               labels = date_format("%Y"))+
+ labs(y= "R$ Bilhões", x= "Anos", title='Receita Líquida x Despesa Total do Governo Central',
+       caption = "Fonte: Tesouro Nacional, Agosto de 2023.")+
+  theme_gray()+
+  theme(axis.text.x=element_text(angle=0, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=0.5, size=10, margin = margin(l=20)),
+        axis.title.y = element_text(size=10, face = "bold"),
+        axis.title.x = element_text(size=10, face = "bold"),
+        plot.caption = element_text(hjust = 0, size=14),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLÍTICA FISCAL
+
+```{r upe33, echo=FALSE}
+dates <- seq(as.Date('2003-01-01'), as.Date('2023-06-01'), by='1 month')
+
+ppiba <-data.frame(window(ppib, start=c(2003,01)), dates)
+
+receitas <- ppiba[,33]
+despesas <- ppiba[,34]
+
+dados <- data.frame(receitas, despesas, dates)
+dados2 <- melt(dados, id.var='dates')
+
+ggplot(data=dados2)+
+  geom_line(aes(x=dates, y=value, colour=variable), linetype = "solid",size = 1)+
+  scale_colour_manual(values = c("blue", "red"))+
+  scale_y_continuous(n.breaks = 10)+
+  scale_x_date(breaks = date_breaks("2 years"),
+               labels = date_format("%Y"))+
+ labs(y= "%PIB", x= "Anos", title='Receita Líquida x Despesa Total do Governo Central',
+       caption = "Fonte: Tesouro Nacional, Agosto de 2023.")+
+  theme_gray()+
+  theme(axis.text.x=element_text(angle=0, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=0.5, size=10, margin = margin(l=20)),
+        axis.title.y = element_text(size=10, face = "bold"),
+        axis.title.x = element_text(size=10, face = "bold"),
+        plot.caption = element_text(hjust = 0, size=14),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo posição da legenda
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLÍTICA FISCAL
+
+```{r upe34, echo=FALSE}
+dates <- seq(as.Date('2003-01-01'), as.Date('2023-06-01'), by='1 month')
+
+ppibb <-data.frame(window(ppib[,61], start=c(2003,01)), dates)
+
+colnames(ppibb)[1] <- 'primario'
+
+ggplot(ppibb, aes(x=dates))+
+  geom_line(aes(y=primario), linewidth=1, colour='blue')+
+  scale_x_date(breaks = date_breaks("2 years"),
+               labels = date_format("%Y"))+
+  labs(y= "%PIB", x= "Anos", title='Resultado Primário do Governo Central acumulado em 12 meses (% PIB)',
+       caption = "Fonte: Tesouro Nacional, 2023.")+
+  theme_gray()+
+  theme(axis.text.x=element_text(angle=0, hjust=0.5, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=0.5, size=10, margin = margin(l=20)),
+        axis.title.y = element_text(size=10, face = "bold"),
+        axis.title.x = element_text(size=10, face = "bold"),
+        plot.caption = element_text(hjust = 0, size=14),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        legend.text=element_text(size=12)) # Definindo
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLÍTICA FISCAL
+```{r upe35, echo=FALSE}
+
+divida <- read_xlsx(
+  path = "dados/Divggnp.xlsx",
+  sheet = "% PIB",
+  col_names = TRUE,
+  col_types = 'numeric',
+  skip = 6
+  ) 
+
+divida <- t(divida[-c(1:2, 51:66),-1])
+
+divida_reais <- read_xlsx(
+  path = "dados/Divggnp.xlsx",
+  sheet = "R$ milhões",
+  col_names = TRUE,
+  col_types = 'numeric',
+  skip = 6
+  ) 
+
+divida_reais <- t(divida_reais[-c(1:2, 52:67),-1])
+
+divida <- ts(divida, start=c(2006,12), freq=12)
+divida_reais <- ts(divida_reais, start=c(2006,12), freq=12)
+
+colnames(divida) <- c(1:48)
+colnames(divida_reais) <- c(1:49)
+
+componentes <- divida[,c(1:4, 19, 25, 26, 40, 44, 45, 46, 48)]
+componentes1 <- cbind(componentes[,c(1:5)], componentes[,c(6:8)]*-1,
+componentes[,9],
+componentes[,10]*-1,
+componentes[,c(11:12)])
+colnames(componentes1) <- c('Dívida líquida do setor público', 'Dívida líquida do governo geral', 'Dívida bruta do governo geral', 'Dívida Interna', 'Dívida Externa', 'Créditos do governo geral', 'Créditos internos', 'Créditos Externos', 'Títulos livres na carteira do Bacen', 'Equalização Cambial', 'Dívida líquida do Banco Central', 'Dívida líquida das empresas estatais')
+
+componentes2 <- cbind(componentes[,c(1:5)], componentes[,c(6:8)]*-1,
+componentes[,9],
+componentes[,10]*-1,
+componentes[,c(11:12)])
+colnames(componentes2) <- c('dlsp', 'dlgg', 'dbgg', 'di', 'de', 'cgg', 'ci', 'ce', 'tlbc', 'ec', 'dlbc', 'dlee')
+
+evol_c1 <- t(round(tail(componentes1, n=13),2))
+evol_c1 <- evol_c1[,1]
+evol_c2 <- t(round(tail(componentes1, n=1), 2))
+evol_res <- evol_c2 - evol_c1
+evol_comp <- cbind(evol_c1, evol_c2, round(evol_res,2))
+colnames(evol_comp) <- c('2022/06', '2023/06', 'Delta')
+
+evol_comp <- evol_comp[-c(8,10),]
+
+datatable(evol_comp,
+          options = list(pageLength = 12,
+            dom = 't',
+            columnDefs = 
+              list(list(className = 'dt-center', targets = "_all"))))
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLÍTICA FISCAL
+```{r upe36, echo=FALSE}
+dates <- seq(as.Date('2006-12-01'), as.Date('2023-06-01'), by='1 month')
+gtsplot(componentes2, dates=dates)
+```
+
+---
+class: center, middle
+### MACROECONOMIA - POLÍTICA FISCAL
+```{r upe37, echo=FALSE}
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("NFSP" = 5793, "DBGG" = 13762),
+#first.date = "2006-12-01",
+#last.date = "2023-06-01",
+#format.data = "wide"
+#)
+#tail(dados_sgs)
+
+#write.csv2(dados_sgs, file='arquivo02.csv')
+
+dados_sgs <- ts(read.csv2('dados/arquivo02.csv',
+                       header=T, sep=';', dec=',')[,-c(1,2)],
+             start=c(2006,12), freq=12)
+
+layout(matrix(c(1,1,2,2), ncol=2, byrow = TRUE))
+plot(dados_sgs[,1], lwd=2, xlab='', ylab='% do PIB', main='Necessidade de Financiamento do Setor Público')
+axis(1, at=c(2006:2023))
+grid(col='grey0')
+
+plot(dados_sgs[,2], lwd=2, xlab='', ylab='% do PIB', main='Dívida Bruta do Governo Geral')
+axis(1, at=c(2006:2023))
+grid(col='grey0')
+```
+
+---
+class: center, middle
+### MACROECONOMIA - SETOR EXTERNO
+```{r upe38, echo=FALSE}
+
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Cambio" = 3697),
+#first.date = "2003-01-01",
+#last.date = "2023-07-01",
+#format.data = "wide"
+#)
+
+#write.csv2(dados_sgs, file='arquivo31.csv')
+
+cambio <- ts(read.csv2('dados/arquivo31.csv',
+                       header=T, sep=';', dec=',')[,-c(1,2)],
+             start=c(2003,01), freq=12)
+
+dates <- seq(as.Date('2003-01-01'), as.Date('2023-07-01'), by='1 month')
+df <- data.frame(time=dates, cambio)
+
+ggplot(df, aes(x=time))+
+  geom_line(aes(y=cambio), linewidth=1, colour='blue')+
+  xlab('Tempo')+ylab('R$/US$')+
+  theme_gray() #Definindo tema
+
+```
+
+---
+class: center, middle
+### MACROECONOMIA - SETOR EXTERNO
+```{r upe39, echo=FALSE}
+
+#dados_sgs <- GetBCBData::gbcbd_get_series(
+#id = c("Estoque_RI" = 3545),
+#first.date = "2003-01-01",
+#last.date = "2022-01-01",
+#format.data = "wide"
+#)
+
+#write.csv2(dados_sgs, file='arquivo32e.csv')
+
+estoque <- ts(read.csv2('dados/arquivo32e.csv',
+                       header=T, sep=';', dec=',')[,-c(1,2)],
+             start=c(2003))
+
+dates <- seq(as.Date('2003-01-01'), as.Date('2022-01-01'), by='1 year')
+
+df <- data.frame(time=dates, estoque)
+
+ggplot(df, aes(x=time))+
+  geom_line(aes(y=estoque/1000), linewidth=1, colour='black')+
+  xlab('Tempo')+ylab('US$ Bilhões')+
+  theme_minimal() #Definindo tema
 ```
 
 ---
