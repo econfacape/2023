@@ -982,7 +982,7 @@ options(digits=4)
 
 anterior <- as.Date("2023-06-01")
 atual <-  as.Date("2023-07-01") #ultimo mes disponibilizado
-today <- as.Date("2023-08-11") #data para o IGPI - ultima semana do preço semana do preço
+today <- as.Date("2023-08-18") #data para o IGPI - ultima semana do preço semana do preço
 mes <- 7
 
 #Entrando dados no R
@@ -1320,8 +1320,8 @@ class: center
 ``` {r upe11, out.width  = "100%", fig.align  = "center"}
 library(imputeTS)
 library(tsutils)
-data <- as.Date("2023-08-11")
-sem_ano <- 32 #ajustar semanalmente
+data <- as.Date("2023-08-18")
+sem_ano <- 33 #ajustar semanalmente
 
 #Direcionado o R para o Diretorio a ser trabalhado
 setwd('/Users/jricardofl/Dropbox/tempecon/dados_Uva')
