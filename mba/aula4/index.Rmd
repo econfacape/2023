@@ -23,7 +23,7 @@ params:
 
 ---
 class: center, middle
-### O QUE É AGRONEGÓCIO?
+### GESTÃO DO AGRONEGÓCIO 4.0
 
 ```{r setup, include=FALSE}
 # Dependências dos slides/aula
@@ -157,19 +157,38 @@ print_rmd <- function(file, encoding = "UTF-8", render = TRUE){
 
 .pull-left[
 
+```{r, echo=FALSE, out.width="100%"}
+knitr::include_graphics("img_r/agro00.png")
+```
+
+]
+
+.pull-right[
+
+```{r, echo=FALSE, out.width="110%"}
+knitr::include_graphics("img_r/agro0.png")
+```
+
+]
+---
+class: center, middle
+### O QUE É AGRONEGÓCIO?
+
+.pull-left[
+
 - A agricultura ou as atividades agropecuárias tem um papel fundamental no desenvolvimento da humanidade. Já se pensou que a agricultura ia impedir o desenvolvimento, pois a população crescia a taxa geométrica e os alimentos a uma taxa aritmética;
 
 - Com o passar dos séculos se constituiu um conjunto de propriedades muito diversificadas, em que se buscava produzir tudo o que se consumia. Eram autossuficientes. Os avanços tecnológicos a partir dos anos 70 do século XX fizeram este quadro mudar. 
 
-- As propriedades passaram a reduzir a diversificação e se produzirem mais uma monocultura. Consequentemente, não são mais autossuficientes.
+- As propriedades passaram a reduzir a diversificação e, consequentemente, não são mais autossuficientes.
 ]
 
 .pull-right[
 
 - Se especializam em determinadas atividades. Passam a depender mais de insumos e produtos que outros produzem.
 
-```{r, echo=FALSE, out.width="70%"}
-knitr::include_graphics("https://media.giphy.com/media/PBfRS4TFQRb6mbM3aj/giphy.gif")
+```{r, echo=FALSE, out.width="100%"}
+knitr::include_graphics("img_r/aagro1.png")
 ```
 ]
 
