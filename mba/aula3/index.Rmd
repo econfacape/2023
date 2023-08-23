@@ -1606,7 +1606,7 @@ df <- data.frame(time=dates, cambio)
 
 ggplot(df, aes(x=time))+
   geom_line(aes(y=cambio), linewidth=1, colour='blue')+
-  xlab('Tempo')+ylab('R$/US$')+
+  xlab('Tempo')+ylab('Taxa de Câmbio em R$/US$')+
   theme_gray() #Definindo tema
 
 ```
@@ -1635,7 +1635,7 @@ df <- data.frame(time=dates, estoque)
 
 ggplot(df, aes(x=time))+
   geom_line(aes(y=estoque/1000), linewidth=1, colour='black')+
-  xlab('Tempo')+ylab('US$ Bilhões')+
+  xlab('Tempo')+ylab('Estoque de Reservas Internacionais em US$ Bilhões')+
   theme_minimal() #Definindo tema
 ```
 
