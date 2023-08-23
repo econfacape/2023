@@ -152,6 +152,31 @@ knitr::include_graphics("https://media.giphy.com/media/ZtyirT4Pgd4hpggRUP/giphy.
 ```
 
 ---
+class: center
+### PRECISAMOS FAZER CONTA! SEMPRE! TODA HORA! 
+
+.pull-left[
+```{r, echo=FALSE, out.width="80%"}
+knitr::include_graphics("img_r/fig21.png")
+```
+]
+
+.pull-right[
+  
+#### LUCRO = RECEITA – CUSTOS
+  
+#### RECEITA = PREÇO X QUANTIDADE
+  
+  
+## **RECEITA NÃO É LUCRO!**
+  
+  
+#### UMA PARTE DO LUCRO POSITIVO SE TORNA A RECEITA DA FAMÍLIA, QUE COBRE OS CUSTOS DA FAMÍLIA. 
+  
+#### A OUTRA PARTE É PARA COBRIR OS CUSTOS DA EMPRESA E PARA FAZER INVESTIMENTOS.
+]
+
+---
 class: center, middle
 ### CUSTOS DE PRODUÇÃO
 
@@ -660,7 +685,7 @@ class: center, middle
 
 .pull-right[
 
-- O oligopólio é caracterizado por um pequeno número de empresas no setor: vendas de tratores, serviços de poda mecanizada; venda de insumos (exemplo: PBZ onde se pode comprar duas opçoes, Cultar/Syngenta ou Ligeiro/UPL); embalagens, caixas, frete marítimo, setor automobilístico ou telefonia. 
+- O oligopólio é caracterizado por um pequeno número de empresas no setor: vendas de tratores, serviços de poda mecanizada; venda de insumos (exemplo: PBZ onde se pode comprar 4 opçoes, Cultar/Syngenta, PacloBR/TradeCorp, Ligeiro/UPL e Paclot New); embalagens, caixas, frete marítimo, setor automobilístico ou telefonia. 
 
 - Existem barreiras a entrada e as empresas podem concorrer entre si via guerra de preços/promoções ou formarem cartéis, com determinação de preços e repartição do mercado. 
 

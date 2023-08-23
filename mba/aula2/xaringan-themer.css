@@ -140,6 +140,7 @@ a, a > code {
 }
 .title-slide {
   background-color: var(--title-slide-background-color);
+  background-image: url("https://bit.ly/3JJ2ZXA");
   background-size: 12;
   background-position: bottom 10px right 20px;
 }
