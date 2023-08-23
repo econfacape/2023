@@ -1,0 +1,426 @@
+---
+title: "Aula 6 - Análise de Tendência e Sazonalidade"
+author: "João Ricardo F. de Lima"
+date: "`r format(Sys.time(), '%d de %B de %Y.')`"
+output: 
+    html_document:
+        theme: flatly
+        number_sections: yes
+        highlight: textmate
+#        includes: 
+#          in_header: "header.html"
+        toc: yes
+        toc_float:
+          collapsed: yes
+          smooth_scroll: yes 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  warning    = FALSE,
+  message    = FALSE,
+  fig.width  = 8, 
+  fig.height = 6,
+  fig.align  = "center",
+  comment    = "#",
+  size       = "normalsize"
+  )
+
+#Linhas precisam de ajuste semanal: 30, 104, 201, 204
+```
+
+<br>
+
+# Análise da Tendência
+
+<br>
+
+A **tendência determinística** de uma série temporal é representada por mudanças no nível médio da série que ocorrem de forma previsível, em função do tempo. Existe ainda a **Tendência Estocástica**, uma tendência que muda de forma aleatória ao longo do tempo. 
+
+Enquanto a tendência determinística representa variações percentuais fixas ao longo do tempo, a tendência estocástica implica em uma variação percentual aleatória e imprevisível.
+
+Supondo que os componentes Ciclo e Sazonalidade não estejam presentes em uma série temporal ($Y_t$), a mesma pode ser representada por
+
+$$
+Y_t=T_t+\epsilon_t
+$$ 
+
+em que $T_t$ é o componente de tendência e $\epsilon_t$ é o resíduo do modelo.
+
+Existem vários métodos para estimar a tendência determinística $T_t$, sendo que os mais utilizados são os métodos de regressão ou Filtro de Hodrick-Prescott.
+ 
+No método de regressão, ajusta-se $Y_t$ como uma função do tempo:
+
+$$
+Y_t=f(t)+\epsilon_t
+$$ 
+
+em que f(t) pode assumir a forma de um polinômio de qualquer grau ou exponencial. Tem-se as seguintes possibilidades:
+
+
+a) Tendência Linear: $Y_t=\beta_0+\beta_1t+\epsilon_t$ 
+ 
+b) Tendência Quadrática: $Y_t=\beta_0+\beta_1t+\beta_2t^2+\epsilon_t$ 
+ 
+c) Polinômio de grau k: $Y_t=\beta_0+\beta_1t+\beta_2t^2+\dots+\beta_kt^k+\epsilon_t$ 
+ 
+d) Exponencial: $Y_t=Ae^{\beta t}\epsilon_t$ 
+ 
+a variável explicativa nestes modelos é o tempo (t) que assume os valores t=1,2,3,...T, chamada de variável tendência (trend).
+
+<br>
+
+## Entrando com os dados no R
+
+<br>
+
+``` {r econ1, warning=FALSE, message=FALSE} 
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/dados_manga')
+
+#Inicio do Script
+#Pacotes a serem utilizados 
+library(mFilter)
+library(forecast)
+library(dplyr)
+library(tsutils)
+library(ggplot2)
+library(reshape2)
+library(greybox)
+library(scales)
+
+atual <-  as.Date("2023-07-01") #ultimo mes disponibilizado
+mes <- 7
+
+#Entrando dados no R
+dados2 <- read.csv2('total_exporta_br.csv', header=T, sep=";", dec = ".")
+#dados <- dados[,-c(9:10)] #retirar as ultimas colunas
+colnames(dados2)[1]<-'ano'
+
+#Ajusta para Volume
+#Analise de Serie Temporal
+exporta_manga_volume <- dados2[,4]
+exporta_manga_volume<-exporta_manga_volume/1000  #passando de quilo para tonelada
+
+#Setando como uma série temporal
+exporta_manga_volume <- ts(exporta_manga_volume, start=c(2012,1), freq=12)
+
+#Grafico da evolucao do volume exportado de manga
+plot(exporta_manga_volume, main='Volume mensal exportado de Mangas',
+     xlab='Meses dos anos', ylab='Toneladas', lwd=3)
+```
+
+<br>
+
+## Decomposição da Série Temporal nos componentes
+
+``` {r econ2, warning=FALSE, message=FALSE} 
+#Decompor a Serie
+decompa <- decompose(exporta_manga_volume, type = 'multiplicative')
+plot(decompa)
+```
+
+<br>
+
+``` {r econ3, warning=FALSE, message=FALSE} 
+#Mostrar apenas a Tendencia da Serie
+plot(decompa$trend)
+```
+
+<br>
+
+## Estimação de Modelos de Tendência
+
+<br>
+
+``` {r econ4, warning=FALSE, message=FALSE} 
+
+# Modelos estimados com a Série Original
+trend <- 1:length(exporta_manga_volume) #geracao da variavel tendencia
+
+regress1 <- lm(exporta_manga_volume ~ trend) #tendencia linear
+summary(regress1)
+
+regress2 <- lm(exporta_manga_volume ~ trend +  I(trend^2)) #tendencia quadratica
+summary(regress2)
+```
+
+<br>
+
+A escolha do modelo que melhor ajusta a série é feita pelo $R^2$ ajustado no caso de terem a mesma variável dependente e quantidades diferentes de variáveis explicativas ou dos critérios de Akaike (AIC) e Schwarz (SC) quando as variáveis dependentes forem diferentes.
+
+<br>
+
+## Verificação do modelo com melhor ajuste
+
+<br>
+
+``` {r econ5, warning=FALSE, message=FALSE} 
+AIC(regress1, regress2)
+AICc(regress1)
+AICc(regress2)
+BIC(regress1, regress2)
+```
+
+<br>
+
+``` {r econ6, warning=FALSE, message=FALSE}
+# Modelos estimados com a Série Apenas com a Tendência
+
+exporta_tendencia <- decompa$trend
+
+exporta_tendencia <- ts(exporta_tendencia, start=c(2012,1), freq=12)
+
+trend <- 1:length(exporta_tendencia) #geracao da variavel tendencia
+
+regress3 <- lm(exporta_tendencia ~ trend) #tendencia linear
+summary(regress3)
+
+regress4 <- lm(exporta_tendencia ~ trend +  I(trend^2)) #tendencia quadratica
+summary(regress4)
+```
+
+<br>
+
+# Tendência - Filtro Hodrick-Prescott
+
+<br>
+
+O **filtro Hodrick-Prescott (HP)** é um método de suavização bastante usado entre os macroeconometristas para obter uma estimativa suavizada de um componente de tendência de longo-prazo de uma série temporal.
+
+Considere que se tenha uma série temporal $y_t$ e que se queira decompor a série em partes, uma tendência \{$\mu_t$\}, um componente cíclico \{$c_t$\} e um componente de erro \{$\epsilon_t$\}. 
+
+$$
+min \bigg(\frac{1}{T}\sum_{t=1}^{T}(y_t-\mu_t)^2+\frac{\lambda}{T}\sum_{t=2}^{T-1}[(\mu_{t+1}-\mu_t)-(\mu_t-\mu_{t-1})]^2\bigg)
+$$
+com $\lambda$ sendo uma constante e T o número de observações.
+
+O problema é selecionar \{$\mu_t$\} que minimize a soma de quadrados. Na minimização, $\lambda$ é um parâmetro  que reflete uma penalidade e controla a suavização da variância relativa série. Quanto maior o valor do $\lambda$, maior é a penalidade e mais suave é essa variância. Se $\lambda=\infty$, a série suavizada é uma tendência linear. Se $\lambda=0$, a tendência é a própria série $y_t$;
+Se recomenda os valores de $\lambda$ iguais a 100, 1.600 e 14.400 para dados anuais, trimestrais e mensais, respectivamente.
+
+<br>
+
+``` {r econ7, warning=FALSE, message=FALSE}
+
+#Calculo da tendencia pelo Filtro de Hodrick-Prescott
+dadoshp <- hpfilter(exporta_manga_volume, type='lambda', freq=14400) #100 em dados anuais
+plot(dadoshp$trend)
+plot(dadoshp$cycle)
+plot(dadoshp)
+
+#Graficos com o PRECO-HP
+
+plot(exporta_manga_volume, main='Volume mensal exportado de Mangas',
+     xlab='(meses)', ylab='Reais (R$)', lwd=3)
+axis(1, at=c(2012:2023))
+lines(dadoshp$trend, col='red', lwd=3)
+legend('topleft', col=c('black','red'), lty=c(1,1), lwd=c(2,2),
+       legend=c('Preço', 'Série Suavizada'))
+```
+
+<br>
+
+# Análise da Sazonalidade
+
+<br>
+
+**Variações sazonais** são movimentos cíclicos que se completam no período de um ano e se reproduzem nos outros anos com certa regularidade. Em outras palavras, *sazonalidade* significa dizer que em determinados meses os valores estão sistematicamente acima ou abaixo de um valor médio da série.
+
+Assim, nos estudos normalmente se isola o componente sazonalidade por dois motivos:
+
+a) Para estudar os outros componentes, como a tendência; 
+
+b) identificar os componentes sazonais que expressam a intensidade da sazonalidade a cada período.
+
+<br>
+
+## Gráfico da Sazonalidade
+
+<br>
+
+``` {r econ8, warning=FALSE, message=FALSE} 
+#Mostrar apenas a Sazonalidade da Serie
+plot(decompa$seasonal)
+```
+
+<br>
+
+## Gráfico dos Fatores Sazonais
+
+```{r econ9, warning=FALSE, message=FALSE}
+decompa<-decompose(exporta_manga_volume, type = 'multiplicative')
+sazonal_volume <- decompa$figure
+meses <- seq(as.Date("2021/1/1"), by = "month", length.out = 12) 
+sazonal_graph_volume <- tibble(meses, sazonal_volume)
+
+g6 <- ggplot(data=sazonal_graph_volume)+
+  geom_line(aes(x=meses, y=sazonal_volume), color="blue", size=1.5)+
+  scale_y_continuous(limits=c(-1,3), n.breaks = 5, expand = expansion(add=c(0,0.5)), 
+                     labels=number_format(accuracy = 0.1)) +
+    scale_x_date(date_breaks = "1 month",
+               labels = date_format("%B"))+
+  labs(y= "", x= "Meses de cada Ano", title='',
+       caption = "")+
+  theme_minimal()+
+  theme(axis.text.x=element_text(angle=45, hjust=0.5, size=12, margin = margin(b=10)),
+        axis.text.y=element_text(hjust=0.5, size=12, margin = margin(l=10)),
+        axis.title.y = element_text(size=12, face = "bold"),
+        axis.title.x = element_text(size=12, face = "bold"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=10)) # Definindo posição da legenda
+
+g6
+```
+
+<br>
+
+## Análise da Sazonalidade com o seasplot
+
+<br>
+
+``` {r econ10, warning=FALSE, message=FALSE}
+seasplot(exporta_manga_volume, outplot = 5)
+```
+
+<br>
+
+## Sazonalidade - Regressão
+
+<br>
+
+A sazonalidade determinística pode ser analisada pelo **método de regressão** com o uso de *dummies* (binárias). Considere: 
+
+<br>
+
+$$
+Y_t=T_t+S_t+\epsilon_t
+$$
+
+<br>
+
+em que a tendência é dada por por $T_t=\sum_{j=0}^{k}\beta_jt^j$;
+
+Se a sazonalidade é determinística, o padrão sazonal não varia a cada ano e pode ser representado por 12 dummies sazonais $S_t=\sum_{j=1}^{12}\alpha_jd_{jt}$
+
+Cada série de dummy sazonal da variável "y" pode ser facilmente gerada no R pelo comando ``dseas1 <- seasonaldummy(y) ``. Se a restrição $\sum_{j=i}^{12}d_j=0$ for usada, $\alpha_j$ representa o efeito sazonal do período "s" comparado com uma linha de tendencia média.
+	
+Estima-se o seguinte modelo:
+
+<br>
+
+$$
+Y_t=\sum_{j=0}^{k}\beta_jt^j+\sum_{j=1}^{11}\alpha_jD_{jt}+\epsilon_t
+$$
+<br>
+
+os coeficientes $\alpha_1, \alpha_2, \dots, \alpha_12$ são as constantes sazonais. 
+
+Dado que $\sum_{j=i}^{12}d_j=0$, $\alpha_{12}=-(\alpha_1+\alpha_2+ \dots+ \alpha_{11})$
+
+<br>
+
+## Exemplo Sazonalidade Determinística por regressão no R
+
+<br>
+
+``` {r econ11, warning=FALSE, message=FALSE}
+#Geracao das variaveis Dummy Sazonais
+exporta_manga_volume1 <- window(exporta_manga_volume, end=c(2022,12))
+trend_volume <- cmav(exporta_manga_volume, outplot=F)
+trend_volume1 <- window(trend_volume, end=c(2022,12))
+
+dseas1 <- seasonaldummy(exporta_manga_volume1)
+for(i in c(12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132)) {
+  dseas1[i,] <- -1
+}
+
+#resultados ficarem com 4 casas decimais
+#options(digits=4) 
+
+regressao5 <- lm(exporta_manga_volume1 ~ trend_volume1 + dseas1)
+summary(regressao5)
+
+# Organização dos Coeficientes da Regressão 
+
+coeffs <- coefficients(regressao5) #salva os coeficientes do modelo
+
+#Calculo do efeito sazonal para dezembro como sendo o 
+#negativo do somatorio dos outros meses
+
+dezembro <- as.data.frame(-(coeffs[3]+coeffs[4]+coeffs[5]+coeffs[6]+coeffs[7]+
+                              coeffs[8]+coeffs[9]+coeffs[10]+coeffs[11]
+                            +coeffs[12]+coeffs[13]))
+
+colnames(dezembro)[1] <- "coeffs"
+rownames(dezembro)[1] <- "Dezembro"
+
+#salva os coeficientes estimados em um data frame
+coeffs <- as.data.frame(coeffs) 
+rownames(coeffs) <- c("intercepto", "tendencia", "Janeiro", "Fevereiro", "Março",
+                      "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", 
+                      "Outubro", "Novembro")
+
+# adiciona uma linha no primeiro data frame, juntando dezembro
+# com os demais meses
+indices_sazonais <- bind_rows(coeffs, dezembro) 
+
+#retira as duas primeiras linhas
+indices_sazonais <- indices_sazonais %>% slice(-(1:2)) 
+
+#cria uma variável "meses"
+indices_sazonais$meses <- c("Janeiro", "Fevereiro", "Março",
+                      "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", 
+                      "Outubro", "Novembro", "Dezembro")
+
+#Transforma a variável em um factor para fazer o gráfico sem mudar
+#a ordem do eixo do x
+indices_sazonais$meses <- factor(indices_sazonais$meses, levels = indices_sazonais$meses)
+
+#Gráfico
+
+mycolor1 <- "blue" #escolhe a cor do gráfico
+
+ggplot(data=indices_sazonais, aes(x=meses, y=coeffs, fill="Indices Sazonais"))+
+  geom_col()+
+    scale_fill_manual(values=mycolor1)+
+    labs(y= "Índices Sazonais", x= "Meses", title='Analise de Sazonalidade Exportações de Manga por Regressão',
+       caption = "")+
+    theme_minimal()+ #Definindo tema
+    theme(axis.text.x=element_text(angle=0, hjust=0.5, size=8, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=14, margin = margin(l=20)),
+        axis.title.x = element_text(size=14, face = "bold", margin = margin(b=20)),
+        axis.title.y = element_text(size=14, face = "bold", margin = margin(l=40)),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = 'bottom',
+        legend.title = element_blank()) # Definindo posição da legenda
+```
+
+<br>
+
+## Análise da Tendência sem a Sazonalidade
+
+<br>
+
+``` {r econ12, warning=FALSE, message=FALSE}
+regressao6 <- lm(exporta_manga_volume1 ~ + dseas1)
+summary(regressao6)
+
+serie_semsaz <- regressao6$residuals
+serie_semsaz <- ts(serie_semsaz, start=c(2012,1), freq=12)
+
+plot(serie_semsaz)
+```
+
+``` {r econ13, warning=FALSE, message=FALSE}
+trend <- 1:length(serie_semsaz) #geracao da variavel tendencia
+
+regress7 <- lm(serie_semsaz ~ trend) #tendencia linear
+summary(regress7)
+```
