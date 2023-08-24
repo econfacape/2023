@@ -261,7 +261,26 @@ Row
 ### Evolução da sazonalidade preço limão Tahiti: 2013 a 2023 {.no-title}
 
 ```{r upe3}
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/dados_limao')
+
 #Mostrar apenas a Sazonalidade da Serie
+dados <- read.csv2('dados082023.csv', header=T, dec=".")
+
+#Entrando dados no R - Deflator
+igpdi <- read.csv2('igpdi.csv', 
+                   header=T, sep=";",
+                   dec=".")[,-1]
+
+#Deflacionar a serie de limão
+preco_def <-dados*(igpdi[length(igpdi)]/igpdi)
+
+#Configurar como serie temporal
+preco_limao <- ts(preco_def, start=c(2013,1), freq=12)
+
+#Decompor a Serie
+decompa <- decompose(preco_limao, type = 'multiplicative')
+
 sazonal_preco <- decompa$figure
 meses <- seq(as.Date("2022/1/1"), by = "month", length.out = 12) 
 sazonal_graph_preco <- tibble(meses, sazonal_preco)
@@ -297,6 +316,25 @@ ggplotly(g3) %>%
 ### Evolução da sazonalidade preço limão Tahiti: 2013 a 2023 {.no-title}
 
 ```{r upe4}
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/dados_limao')
+
+atual <-  as.Date("2023-07-01") #ultimo mes disponibilizado
+mes <- 7
+
+#Entrando dados no R
+dados2 <- read.csv2('total_exporta_br.csv', header=T, sep=";", dec = ".")
+
+#Ajusta para Volume
+#Analise de Serie Temporal
+exporta_limao_volume <- dados2[,3]
+exporta_limao_volume<-exporta_limao_volume/1000  #passando de quilo para tonelada
+
+#Setando como uma série temporal
+exporta_limao_volume <- ts(exporta_limao_volume, start=c(2013,1), freq=12)
+
+decompa <- decompose(exporta_limao_volume, type = 'multiplicative')
+
 #Mostrar apenas a Sazonalidade da Serie
 sazonal_volume <- decompa$figure
 meses <- seq(as.Date("2022/1/1"), by = "month", length.out = 12) 
