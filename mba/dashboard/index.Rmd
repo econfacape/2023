@@ -1,0 +1,332 @@
+---
+title: "DASHBOARD MERCADO DE LIMÃO"
+#author: "João Ricardo Lima"
+output: 
+  flexdashboard::flex_dashboard:
+#    logo: "https://raw.githubusercontent.com/observatoriosdemercado/manga/main/branca_peq.png"
+    favicon: "https://www.embrapa.br/portal-embrapa-theme/im#ages/marca-embrapa-colorida.png"
+#    navbar:
+#      - {title: "Metodologia e Fontes dos Dados", href: "https://observatoriosdemercado.github.io/uva/fonte/", align: right}
+    orientation: rows
+    #css: styles.css
+    vertical_layout: fill #sem barra de rolagem e scroll com barra
+    theme: 
+      version: 4
+      bootswatch: bootstrap
+      navbar-bg: "#183b8c"
+      bg:        "#ffffff"
+      fg:        "#183b8c"
+#runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(foreign)
+library(mFilter)
+library(forecast)
+library(dplyr)
+library(tsutils)
+library(xts)
+library(ggthemes)
+library(FinTS)
+library(scales)
+library(ggplot2)
+library(reshape)
+library(reshape2)
+library(imputeTS)
+library(seasonal)
+library(uroot)
+library(tseries)
+library(quantmod)
+library(kableExtra)# complex tables
+library(lmtest)
+library(dygraphs)
+library(plotly)
+library(DT)
+library(lubridate)
+library(rmarkdown)
+library(bslib)
+library(shiny)
+library(magrittr)# pipe operations
+library(readxl)
+
+checkX13()
+
+knitr::opts_chunk$set(
+  echo       = FALSE,
+  warning    = FALSE,
+  message    = FALSE,
+  fig.width  = 8, 
+  fig.height = 6,
+  fig.align  = "center",
+  comment    = "#",
+  size       = "normalsize",
+  comment    = "#"
+  )
+```
+
+PREÇOS E EXPORTAÇÕES
+======================================================================
+
+```{r database5}
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/dados_limao')
+
+#Inicio do Script
+#Pacotes a serem utilizados 
+library(mFilter)
+library(forecast)
+library(dplyr)
+library(tsutils)
+library(ggplot2)
+library(reshape2)
+library(greybox)
+library(scales)
+
+today <- as.Date("2023-08-01")
+mes_ano <- 8 #ajustar mensalmente
+
+#Entrando dados no R
+
+dados <- read.csv2('dados082023.csv', header=T, dec=".")
+
+#Entrando dados no R - Deflator
+igpdi <- read.csv2('igpdi.csv', 
+                   header=T, sep=";",
+                   dec=".")[,-1]
+
+#Deflacionar a serie de limão
+preco_def <-dados*(igpdi[length(igpdi)]/igpdi)
+
+#Configurar como serie temporal
+preco_limao <- ts(preco_def, start=c(2013,1), freq=12)
+
+#Decompor a Serie
+decompa <- decompose(preco_limao, type = 'multiplicative')
+
+#Salvando apenas a tendência da serie
+trend_limao <- cmav(preco_limao, outplot=F)
+
+#Organizandos dados para o gráfico
+date <- seq(as.Date('2013-01-01'),to=today,by='1 month')
+
+dadosl <- tibble(preco_limao, trend_limao, date)
+```
+
+Row {data-height=125}
+-----------------------------------------------------------------------
+
+### Preço Limão Tahiti em Agosto de 2023 (Caixa 27 kg) 
+``` {r}
+num <- tail(preco_limao,1) 
+valueBox(
+  value = paste0("R$", format(num, decimal.mark =  ",")),
+#  color = "lightblue3",
+  icon= "fa-arrow-up")
+```
+
+### Preço Limão Tahiti em Julho de 2023 (Caixa 27 kg) 
+``` {r}
+num <- 36.47
+valueBox(
+  value = paste0("R$", format(num, decimal.mark =  ",")),
+#  color = "lightblue3",
+  icon= "fa-pen")
+```
+
+### Volume Exportado (ton) Limão Tahiti em Julho de 2023
+``` {r}
+num <- 13.626
+valueBox(
+  value = paste0( num, " Toneladas" ),
+#  color = "lightblue3",
+  icon= "fa-arrow-down")
+```
+
+### Volume Exportado (ton) Limão Tahiti em Junho de 2023
+``` {r}
+num <- 16.167
+valueBox(
+  value = paste0( num, " Toneladas" ),
+#  color = "lightblue3",
+  icon= "fa-pen")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Evolução do preço limão Tahiti: 2013 a 2023 {.no-title}
+
+```{r upe1}
+#Gráfico com Ggplot2
+
+g1 <- ggplot(data=dadosl, aes(x=date)) +  #estetica vai valer para todos os geom's
+  geom_line(aes(y=preco_limao, colour="PREÇO"), lwd=1)+
+  geom_line(aes(y=trend_limao, colour="TENDÊNCIA"), lwd=1)+
+  scale_colour_manual("", 
+                      breaks = c("PREÇO", "TENDÊNCIA"),
+                      values = c("blue", "red")) +
+  labs(y= "Preço R$ (Caixa 27 kg)", x= "Meses de cada Ano", title='Evolução do Preço e Tendência do Limão Tahiti em Bebedouro-SP',
+       caption = "Fonte: CEPEA reprocessado pelo Observatório de Mercado da Embrapa") +
+  scale_y_continuous(limits=c(0,150), n.breaks = 10, expand = expansion(add=c(0,0.5)), 
+                     labels=number_format(accuracy = 0.01, decimal.mark = ","))+
+  scale_x_date(date_breaks = "1 year",
+               labels = date_format("%Y"))+
+  theme_classic()+ #Definindo tema
+  theme(axis.text.x=element_text(angle=35, hjust=1, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=10, margin = margin(l=20)),
+        axis.title.x = element_text(size=10, face = "bold", margin = margin(b=20)),
+        axis.title.y = element_text(size=10, face = "bold", margin = margin(l=20)),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = c(1,1),
+        legend.justification = c(1.2, 1.2),
+        legend.text=element_text(size=10)) # Definindo posição da legenda
+
+ggplotly(g1) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.20,
+                      title=''))
+```
+
+### Evolução do preço limão Tahiti: 2013 a 2023 {.no-title} 
+
+```{r upe2}
+#Direcionado o R para o Diretorio a ser trabalhado
+setwd('/Users/jricardofl/Dropbox/tempecon/dados_limao')
+
+atual <-  as.Date("2023-07-01") #ultimo mes disponibilizado
+mes <- 7
+
+#Entrando dados no R
+dados2 <- read.csv2('total_exporta_br.csv', header=T, sep=";", dec = ".")
+
+#Ajusta para Volume
+#Analise de Serie Temporal
+exporta_limao_volume <- dados2[,3]
+exporta_limao_volume<-exporta_limao_volume/1000  #passando de quilo para tonelada
+
+#Setando como uma série temporal
+exporta_limao_volume <- ts(exporta_limao_volume, start=c(2013,1), freq=12)
+
+decompa <- decompose(exporta_limao_volume, type = 'multiplicative')
+
+#Salvando apenas a tendência da serie
+trend_limao <- cmav(exporta_limao_volume, outplot=F)
+
+#Organizandos dados para o gráfico
+date <- seq(as.Date('2013-01-01'),to=atual,by='1 month')
+
+dadosl <- tibble(exporta_limao_volume, trend_limao, date)
+
+#Gráfico com Ggplot2
+
+g2 <- ggplot(data=dadosl, aes(x=date)) +  #estetica vai valer para todos os geom's
+  geom_line(aes(y=exporta_limao_volume, colour="VOLUME"), lwd=1)+
+  geom_line(aes(y=trend_limao, colour="TENDÊNCIA"), lwd=1)+
+  scale_colour_manual("", 
+                      breaks = c("VOLUME", "TENDÊNCIA"),
+                      values = c("darkgreen", "gold")) +
+  labs(y= "Toneladas", x= "Meses de cada Ano", title='Evolução do Volume Exportado e Tendência do Limão do Brasil',
+       caption = "Fonte: COMEXSTAT reprocessado pelo Observatório de Mercado da Embrapa") +
+  scale_y_continuous(limits=c(0,24000), n.breaks = 10, expand = expansion(add=c(0,0.5)), 
+                     labels=number_format(accuracy = 0.01, decimal.mark = ","))+
+  scale_x_date(date_breaks = "1 year",
+               labels = date_format("%Y"))+
+  theme_classic()+ #Definindo tema
+  theme(axis.text.x=element_text(angle=35, hjust=1, size=10, margin = margin(b=20)),
+        axis.text.y=element_text(hjust=1, size=10, margin = margin(l=20)),
+        axis.title.x = element_text(size=10, face = "bold", margin = margin(b=20)),
+        axis.title.y = element_text(size=10, face = "bold", margin = margin(l=20)),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = c(1,1),
+        legend.justification = c(1.2, 1.2),
+        legend.text=element_text(size=10)) # Definindo posição da legenda
+
+ggplotly(g2) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.20,
+                      title=''))
+
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Evolução da sazonalidade preço limão Tahiti: 2013 a 2023 {.no-title}
+
+```{r upe3}
+#Mostrar apenas a Sazonalidade da Serie
+sazonal_preco <- decompa$figure
+meses <- seq(as.Date("2022/1/1"), by = "month", length.out = 12) 
+sazonal_graph_preco <- tibble(meses, sazonal_preco)
+
+g3 <- ggplot(data=sazonal_graph_preco)+
+  geom_line(aes(x=meses, y=sazonal_preco), color="blue", size=1.5)+
+  scale_y_continuous(limits=c(0,2), n.breaks = 4, expand = expansion(add=c(0,0.5)), 
+                     labels=number_format(accuracy = 0.1)) +
+    scale_x_date(date_breaks = "1 month",
+               labels = date_format("%B"))+
+  labs(y= "Sazonalidade Preços", x= "Meses de cada Ano", title='Sazonalidade do Preço de Limão Tahiti em Bebedouro-SP',
+       caption = "")+
+  theme_minimal()+
+  theme(axis.text.x=element_text(angle=45, hjust=0.5, size=11, margin = margin(b=10)),
+        axis.text.y=element_text(hjust=0.5, size=11, margin = margin(l=10)),
+        axis.title.y = element_text(size=10, face = "bold"),
+        axis.title.x = element_text(size=10, face = "bold"),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=10)) # Definindo posição da legenda
+
+ggplotly(g3) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.20,
+                      title=''))
+```
+
+### Evolução da sazonalidade preço limão Tahiti: 2013 a 2023 {.no-title}
+
+```{r upe4}
+#Mostrar apenas a Sazonalidade da Serie
+sazonal_volume <- decompa$figure
+meses <- seq(as.Date("2022/1/1"), by = "month", length.out = 12) 
+sazonal_graph_volume <- tibble(meses, sazonal_volume)
+
+g4 <- ggplot(data=sazonal_graph_volume)+
+  geom_line(aes(x=meses, y=sazonal_volume), color="darkgreen", size=1.5)+
+  scale_y_continuous(limits=c(0,2), n.breaks = 4, expand = expansion(add=c(0,0.5)), 
+                     labels=number_format(accuracy = 0.1)) +
+    scale_x_date(date_breaks = "1 month",
+               labels = date_format("%B"))+
+  labs(y= "Sazonalidade Volume Exportado", x= "Meses de cada Ano", title='Sazonalidade do do Volume Exportado de Limão Tahiti do Brasil',
+       caption = "")+
+  theme_minimal()+
+  theme(axis.text.x=element_text(angle=45, hjust=0.5, size=11, margin = margin(b=10)),
+        axis.text.y=element_text(hjust=0.5, size=11, margin = margin(l=10)),
+        axis.title.y = element_text(size=10, face = "bold"),
+        axis.title.x = element_text(size=10, face = "bold"),
+        plot.title = element_text(hjust = 0.5, size=16, face="italic"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.caption = element_text(hjust = 0, size=12),
+        legend.position = "bottom", legend.title = element_blank(),
+        legend.text=element_text(size=10)) # Definindo posição da legenda
+
+
+ggplotly(g4) %>%
+  layout(legend = list(
+                      orientation = "h", 
+                      x=0.35, 
+                      y=-0.20,
+                      title=''))
+```
